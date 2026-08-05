@@ -1,45 +1,57 @@
-# GKG-Syncthing
+# GTK-Syncthing
 
-Dong bo file tu dong giua nhieu may Windows qua **Syncthing** + **Tailscale**.
+Automatic file sync across multiple Windows machines using **[Syncthing](https://syncthing.net/)** over **[Tailscale](https://tailscale.com/)**.
 
-## Nguoi dung (khong can doc code)
+No coding required — double-click a launcher and follow the on-screen prompts.
 
-1. Giai nen (hoac clone) project vao mot thu muc, vi du `C:\Users\Admin\Documents\GKG-Syncthing`
+---
+
+## Quick start
+
+1. Extract (or clone) this repo to a folder, e.g. `C:\Users\You\Documents\GTK-Syncthing`
 2. Double-click **`Cai-Dat-Sync.cmd`**
-3. Lam theo huong dan tren man hinh
+3. Follow the setup wizard
 
-Chi tiet: chay **`Huong-Dan.cmd`** hoac doc **`README.txt`**.
+For detailed instructions, run **`Huong-Dan.cmd`** or read **`README.txt`** (Vietnamese, plain text).
 
-| File | Muc dich |
-|------|----------|
-| `Cai-Dat-Sync.cmd` | Cai lan dau / them may moi |
-| `Huong-Dan.cmd` | Mo huong dan HTML |
-| `Khoi-Dong-Sync.cmd` | Bat lai Syncthing neu bi tat |
+## Launchers
 
-Thu muc dong bo mac dinh: `%USERPROFILE%\Documents\Sync`
+| File | Purpose |
+|------|---------|
+| `Cai-Dat-Sync.cmd` | First-time install / add a new machine |
+| `Huong-Dan.cmd` | Open the HTML guide in your browser |
+| `Khoi-Dong-Sync.cmd` | Restart Syncthing if it was stopped |
 
-## Yeu cau
+**Default sync folder:** `%USERPROFILE%\Documents\Sync`  
+**Syncthing web UI:** [http://127.0.0.1:8384](http://127.0.0.1:8384)
 
-- Windows 10/11
-- [Tailscale](https://tailscale.com) — cung tai khoan tren tat ca cac may
-- Ket noi mang (Syncthing tu cai qua winget hoac portable)
+## Requirements
 
-## Cau hinh (tuy chon)
+- Windows 10 or 11
+- [Tailscale](https://tailscale.com) — same account on every machine
+- Network connectivity (Syncthing is installed automatically via winget or portable bundle)
 
-Lan dau chay, script tu tao `config.ps1` tu `config.example.ps1`.
+## Configuration (optional)
 
-Chinh `config.ps1` de luu san Device ID cac may (`$Peers`) — khong bat buoc, co the dan Device ID luc cai dat.
+On first run, the installer creates `config.ps1` from `config.example.ps1`.
 
-## Maintainer
+Edit `config.ps1` to pre-fill peer Device IDs in `$Peers` — optional; you can also paste IDs during setup.
+
+> `config.ps1` is local to each machine and is listed in `.gitignore`.
+
+## For maintainers
+
+Build a distributable zip:
 
 ```powershell
-# Tao zip phan phoi
 .\tao-goi-cai.ps1
-# -> %USERPROFILE%\Documents\Sync\GKG-Syncthing.zip
+# Output: %USERPROFILE%\Documents\Sync\GKG-Syncthing.zip
 ```
 
-Che do SSH/Unison (legacy, chi 2 may) nam trong `legacy/` — khong dung cho nguoi dung thong thuong.
+## Legacy mode
 
-## Lien quan
+The `legacy/` folder contains an older SSH/Unison workflow (two machines only). It is not used in the default Syncthing setup.
 
-Project docs API (`api-document-specification`) nam cung cap thu muc — dung sync pack nay de copy file formatted doc qua cac may, khong phu thuoc vao nhau ve code.
+## Related
+
+The API docs project (`api-document-specification`) lives in the same parent workspace. Use this sync pack to copy formatted doc files between machines — the two projects are independent in code.
