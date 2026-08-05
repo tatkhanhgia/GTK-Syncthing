@@ -1,0 +1,9 @@
+# Cau hinh rieng tung may - khong commit
+config.ps1
+
+# Zip phan phoi
+*.zip
+
+# Windows
+Thumbs.db
+Desktop.ini

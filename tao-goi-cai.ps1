@@ -1,0 +1,28 @@
+# Tao file zip phan phoi (chay tu thu muc goc project)
+$ErrorActionPreference = 'Stop'
+$ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$OutZip = Join-Path $env:USERPROFILE 'Documents\Sync\GKG-Syncthing.zip'
+
+$include = @(
+    'README.txt', 'Cai-Dat-Sync.cmd', 'Huong-Dan.cmd', 'Khoi-Dong-Sync.cmd', 'HUONG-DAN.html',
+    'config.example.ps1', 'install.ps1', 'syncthing-setup.ps1', 'khoi-dong-sync.ps1', 'legacy'
+)
+$OutDir = Split-Path $OutZip -Parent
+
+$staging = Join-Path $env:TEMP "GKG-Syncthing-$(Get-Date -Format 'yyyyMMddHHmmss')"
+New-Item -ItemType Directory -Force -Path $staging | Out-Null
+
+foreach ($name in $include) {
+    $src = Join-Path $ScriptDir $name
+    if (Test-Path $src) {
+        Copy-Item -Recurse -Force $src (Join-Path $staging $name)
+    }
+}
+
+New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+if (Test-Path $OutZip) { Remove-Item -Force $OutZip }
+Compress-Archive -Path (Join-Path $staging '*') -DestinationPath $OutZip -Force
+Remove-Item -Recurse -Force $staging
+
+Write-Host "Da tao: $OutZip" -ForegroundColor Green
+Get-Item $OutZip | Select-Object FullName, Length, LastWriteTime
