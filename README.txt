@@ -1,13 +1,13 @@
-GKG-SYNCTHING - DONG BO FILE GIUA NHIEU MAY
-==========================================
+DONG BO FILE - CHI CAN 1 FILE
+==============================
 
-Ban chi can 3 file sau (double-click):
+WINDOWS:  Double-click  GKG-Sync.cmd
+MAC:      Double-click  GKG-Sync.command
 
-  Cai-Dat-Sync.cmd     Cai lan dau, hoac them may moi vao mang sync
-  Huong-Dan.cmd        Mo huong dan chi tiet (trinh duyet)
-  Khoi-Dong-Sync.cmd   Bat lai Syncthing neu bi tat (hiem khi can)
+Chon viec trong menu (cai dat, khoi dong lai, mo thu muc...).
 
-Thu muc dong bo file:  %USERPROFILE%\Documents\Sync
-Quan ly Syncthing:     http://127.0.0.1:8384
+Lan dau: chon "Cai dat / Them may moi", cai Tailscale truoc (cung tai khoan moi may).
 
-Cac file .ps1 khac la file he thong - KHONG can mo hay chinh sua.
+Thu muc dong bo: Documents/Sync
+
+(Cac file Cai-Dat-Sync, Bat-Dau-O-Day... van dung duoc — tro vao menu chinh.)

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bat dau o day - Dong bo file</title>
+<style>
+  :root{--blue:#2563eb;--green:#16a34a;--bg:#f8fafc;--card:#fff;--ink:#0f172a;--muted:#64748b}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+  .hero{background:linear-gradient(135deg,#1e40af,var(--blue));color:#fff;text-align:center;padding:48px 20px 40px}
+  .hero h1{margin:0 0 8px;font-size:clamp(26px,5vw,36px)}
+  .hero p{margin:0;opacity:.95;font-size:18px}
+  .wrap{max-width:720px;margin:0 auto;padding:24px 20px 60px}
+  .os-tabs{display:flex;gap:10px;justify-content:center;margin:-28px auto 32px;max-width:400px}
+  .os-tabs button{flex:1;border:none;padding:14px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;background:#fff;box-shadow:0 2px 12px rgba(0,0,0,.12)}
+  .os-tabs button.active{background:var(--blue);color:#fff}
+  .panel{display:none}
+  .panel.active{display:block}
+  .step{background:var(--card);border-radius:16px;padding:24px;margin:16px 0;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid #e2e8f0}
+  .step h2{margin:0 0 12px;font-size:20px;display:flex;align-items:center;gap:12px}
+  .num{background:var(--blue);color:#fff;width:36px;height:36px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+  .btn{display:inline-block;background:var(--green);color:#fff;text-decoration:none;padding:16px 28px;border-radius:12px;font-size:18px;font-weight:700;margin:8px 8px 8px 0}
+  .btn.blue{background:var(--blue)}
+  .note{background:#fffbeb;border-left:4px solid #d97706;padding:14px 18px;border-radius:0 10px 10px 0;margin:16px 0;font-size:15px}
+  .file{font-family:Consolas,monospace;background:#f1f5f9;padding:3px 8px;border-radius:6px;font-weight:700}
+  ul{margin:8px 0;padding-left:20px}
+  .hidden{display:none}
+  footer{text-align:center;color:var(--muted);font-size:14px;margin-top:40px}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>Dong bo file giua cac may</h1>
+  <p>Chi 3 buoc — khong can biet lap trinh</p>
+</header>
+
+<div class="wrap">
+  <div class="os-tabs">
+    <button type="button" id="tab-win" class="active" onclick="showOs('win')">Windows</button>
+    <button type="button" id="tab-mac" onclick="showOs('mac')">Mac</button>
+  </div>
+
+  <div id="panel-win" class="panel active">
+    <div class="step">
+      <h2><span class="num">1</span> Cai Tailscale</h2>
+      <p>Tai va dang nhap <b>cung mot tai khoan</b> tren moi may tinh.</p>
+      <a class="btn blue" href="https://tailscale.com/download/windows" target="_blank">Tai Tailscale</a>
+    </div>
+    <div class="step">
+      <h2><span class="num">2</span> Mo ung dung dong bo</h2>
+      <p>Double-click:</p>
+      <p><span class="file">GKG-Sync.cmd</span></p>
+      <p>Chon <b>Cai dat / Them may moi</b> va lam theo huong dan.</p>
+    </div>
+    <div class="step">
+      <h2><span class="num">3</span> Gui Device ID cho may kia</h2>
+      <p>Sau khi cai xong, trang <b>KET-QUA-CAI-DAT.html</b> tu mo — bam <b>Copy Device ID</b>, gui cho nguoi dung may con lai.</p>
+      <p>May kia cung mo <span class="file">GKG-Sync.cmd</span> → <b>Cai dat</b> → dan Device ID vao.</p>
+    </div>
+  </div>
+
+  <div id="panel-mac" class="panel">
+    <div class="step">
+      <h2><span class="num">1</span> Cai Tailscale</h2>
+      <p>Tai va dang nhap <b>cung mot tai khoan</b> tren moi may tinh.</p>
+      <a class="btn blue" href="https://tailscale.com/download/macos" target="_blank">Tai Tailscale</a>
+    </div>
+    <div class="step">
+      <h2><span class="num">2</span> Mo ung dung dong bo</h2>
+      <p>Double-click:</p>
+      <p><span class="file">GKG-Sync.command</span></p>
+      <div class="note">
+        <b>Lan dau tren Mac:</b> neu macOS hoi quyen — chon <b>Open</b> (Mo).
+      </div>
+      <p>Chon <b>Cai dat / Them may moi</b> trong menu.</p>
+    </div>
+    <div class="step">
+      <h2><span class="num">3</span> Gui Device ID cho may kia</h2>
+      <p>Sau khi cai xong, trang ket qua tu mo — Device ID da duoc copy san. Gui cho nguoi dung may Windows/Mac con lai.</p>
+    </div>
+  </div>
+
+  <div class="step" style="border-top:3px solid var(--green)">
+    <h2 style="color:var(--green)">Xong! Su dung hang ngay</h2>
+    <p>Tha file vao thu muc <b>Documents/Sync</b> — cac may tu dong dong bo.</p>
+    <p class="hidden" id="hint-win">Syncthing tat? Mo <span class="file">GKG-Sync.cmd</span> → <b>Khoi dong lai dong bo</b></p>
+    <p class="hidden" id="hint-mac">Syncthing tat? Mo <span class="file">GKG-Sync.command</span> → <b>Khoi dong lai dong bo</b></p>
+  </div>
+
+  <footer>GKG-Syncthing — can ho tro? Mo <span class="file">HUONG-DAN.html</span></footer>
+</div>
+
+<script>
+function showOs(os){
+  document.getElementById('panel-win').classList.toggle('active', os==='win');
+  document.getElementById('panel-mac').classList.toggle('active', os==='mac');
+  document.getElementById('tab-win').classList.toggle('active', os==='win');
+  document.getElementById('tab-mac').classList.toggle('active', os==='mac');
+  document.getElementById('hint-win').classList.toggle('hidden', os!=='win');
+  document.getElementById('hint-mac').classList.toggle('hidden', os!=='mac');
+}
+(function(){
+  var ua=navigator.userAgent||'';
+  if(/Mac|iPhone|iPad/i.test(ua)) showOs('mac');
+  else if(/Windows/i.test(ua)) showOs('win');
+})();
+</script>
+</body>
+</html>

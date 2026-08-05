@@ -1,5 +1,9 @@
 # Cau hinh rieng tung may - khong commit
 config.ps1
+config.ini
+
+# Ket qua cai dat (tu dong tao) - co the xoa
+KET-QUA-CAI-DAT.html
 
 # Zip phan phoi
 *.zip

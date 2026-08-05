@@ -10,33 +10,29 @@ param(
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-$configPath = Join-Path $ScriptDir 'config.ps1'
-$examplePath = Join-Path $ScriptDir 'config.example.ps1'
-if (-not (Test-Path $configPath)) {
-    if (-not (Test-Path $examplePath)) {
-        throw 'Khong tim thay config.ps1 hoac config.example.ps1'
-    }
-    Copy-Item $examplePath $configPath
-    Write-Host 'Da tao config.ps1 tu config.example.ps1' -ForegroundColor Yellow
-    Write-Host ''
-}
-
-. $configPath
+. (Join-Path $ScriptDir 'load-config.ps1')
+Import-GkgConfig -ScriptDir $ScriptDir
 . (Join-Path $ScriptDir 'syncthing-setup.ps1')
+. (Join-Path $ScriptDir 'preflight.ps1')
 
 function Show-Banner {
     Write-Host ''
     Write-Host '========================================' -ForegroundColor Green
-    Write-Host '   GKG-SYNCTHING - CAI DAT DONG BO FILE' -ForegroundColor Green
+    Write-Host '   DONG BO FILE - TU DONG CAI DAT' -ForegroundColor Green
     Write-Host '========================================' -ForegroundColor Green
     Write-Host ''
-    Write-Host 'Dong bo tu dong giua nhieu may (qua Tailscale)'
-    Write-Host "Thu muc sync: $($PackConfig.SyncFolder)"
+    Write-Host 'Chi can lam theo huong dan tung buoc.' -ForegroundColor DarkGray
     Write-Host ''
 }
 
 function Show-SyncthingResult {
     param($Result)
+
+    $htmlPath = Write-InstallResultHtml `
+        -ScriptDir $ScriptDir `
+        -DeviceId $Result.DeviceId `
+        -SyncFolder $Result.SyncFolder `
+        -GuiUrl $Result.GuiUrl
 
     Write-Host ''
     Write-Host '========================================' -ForegroundColor Green
@@ -44,51 +40,17 @@ function Show-SyncthingResult {
     Write-Host '========================================' -ForegroundColor Green
     Write-Host ''
     Write-Ok "Thu muc sync: $($Result.SyncFolder)"
-    Write-Ok "Trang quan ly: $($Result.GuiUrl)"
     Write-Host ''
-    Write-Host 'DEVICE ID MAY NAY (copy gui cho may khac):' -ForegroundColor Yellow
-    Write-Host $Result.DeviceId -ForegroundColor White
+    Write-Host 'Trang ket qua dang mo — bam Copy Device ID va gui cho may KIA.' -ForegroundColor Cyan
     Write-Host ''
-    Write-Host 'Tren may khac: chay Cai-Dat-Sync.cmd va dan Device ID o tren.' -ForegroundColor Cyan
-    Write-Host 'Can huong dan chi tiet? Chay Huong-Dan.cmd' -ForegroundColor DarkGray
-    Write-Host ''
-    Write-Host 'Sau do tha file vao thu muc Sync la tu dong dong bo.' -ForegroundColor Green
-    Write-Host ''
+
+    Show-DeviceIdDialog -DeviceId $Result.DeviceId -HtmlPath $htmlPath
 
     try {
         Start-Process $Result.GuiUrl | Out-Null
     } catch {
         Write-Warn "Mo trinh duyet thu cong: $($Result.GuiUrl)"
     }
-}
-
-function Read-DeviceIds {
-    $ids = @()
-    foreach ($id in (Get-PeerDeviceIds)) {
-        $ids += $id
-    }
-
-    if ($ids.Count -gt 0) {
-        Write-Host 'Device ID da luu san trong config.ps1:' -ForegroundColor Cyan
-        foreach ($id in $ids) {
-            Write-Host "  $id"
-        }
-        Write-Host ''
-    }
-
-    Write-Host 'Nhap Device ID cua may khac (Enter = xong, bo qua):' -ForegroundColor Yellow
-    while ($true) {
-        $input = Read-Host 'Device ID'
-        if (-not $input) { break }
-        $trimmed = $input.Trim()
-        if ($ids -contains $trimmed) {
-            Write-Warn 'Device ID nay da co, bo qua.'
-            continue
-        }
-        $ids += $trimmed
-    }
-
-    return $ids
 }
 
 function Install-SshMode {
@@ -114,6 +76,7 @@ function Install-SshMode {
 }
 
 Show-Banner
+Ensure-Tailscale
 
 if ($Mode -eq 'Menu') {
     Write-Host 'Chon che do cai dat:' -ForegroundColor Cyan
@@ -133,10 +96,12 @@ if ($Mode -eq 'Syncthing') {
         if ($SkipPrompt) {
             $RemoteDeviceIds = @(Get-PeerDeviceIds)
         } else {
-            $RemoteDeviceIds = Read-DeviceIds
+            $RemoteDeviceIds = Invoke-SetupWizard -ExistingIds @(Get-PeerDeviceIds)
         }
     }
 
+    Write-Host ''
+    Write-Info 'Dang cai dat... (cho vai phut)'
     $result = Install-SyncthingMode -Config $PackConfig -RemoteDeviceIds $RemoteDeviceIds
     Show-SyncthingResult -Result $result
     exit 0

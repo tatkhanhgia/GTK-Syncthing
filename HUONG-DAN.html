@@ -171,7 +171,7 @@
 
 <header class="hero">
   <h1>Đồng bộ file nhiều máy</h1>
-  <p>Hướng dẫn đơn giản cho người mới bắt đầu &mdash; làm theo từng bước là xong</p>
+  <p>Hướng dẫn đơn giản cho người mới bắt đầu &mdash; Windows và macOS &mdash; làm theo từng bước là xong</p>
 </header>
 
 <nav class="toc">
@@ -183,6 +183,7 @@
     <a href="#phan5">5. Dùng hằng ngày</a>
     <a href="#phan6">6. Nâng cao</a>
     <a href="#phan7">7. Hỏi đáp</a>
+    <a href="#mac">Mac</a>
   </div>
 </nav>
 
@@ -196,17 +197,16 @@
       <li>Không còn phải gửi file qua Zalo, Email hay USB.</li>
       <li>File sửa ở máy nào, các máy còn lại tự động cập nhật theo.</li>
     </ul>
-    <span class="path">Thư mục sync: <code>%USERPROFILE%\Documents\Sync</code> (ví dụ: <code>C:\Users\Admin\Documents\Sync</code>)</span>
+    <span class="path">Thư mục sync: <code>~/Documents/Sync</code> (Windows: <code>C:\Users\...\Documents\Sync</code>)</span>
   </div>
   <div class="card amber">
-    <h3>Chỉ cần nhớ 3 file</h3>
+    <h3>File cần nhớ</h3>
     <table>
-      <tr><th>File</th><th>Khi nào dùng</th></tr>
-      <tr><td><b>Cai-Dat-Sync.cmd</b></td><td>Cài lần đầu, hoặc thêm máy mới</td></tr>
-      <tr><td><b>Huong-Dan.cmd</b></td><td>Xem hướng dẫn chi tiết (file này)</td></tr>
-      <tr><td><b>Khoi-Dong-Sync.cmd</b></td><td>Bật lại Syncthing nếu bị tắt</td></tr>
+      <tr><th>Hệ điều hành</th><th>Cài / thêm máy</th><th>Hướng dẫn</th><th>Bật lại Syncthing</th></tr>
+      <tr><td><b>Windows</b></td><td><b>Cai-Dat-Sync.cmd</b></td><td><b>Huong-Dan.cmd</b></td><td><b>Khoi-Dong-Sync.cmd</b></td></tr>
+      <tr><td><b>macOS</b></td><td><b>mac/cai-dat-sync.command</b></td><td><b>mac/huong-dan.command</b></td><td><b>mac/khoi-dong-sync.command</b></td></tr>
     </table>
-    <p style="margin-top:12px;color:var(--muted);font-size:14px">Các file <code>.ps1</code> khác là file hệ thống &mdash; không cần mở.</p>
+    <p style="margin-top:12px;color:var(--muted);font-size:14px">Mac lần đầu: mở Terminal, chạy <code>chmod +x mac/*.sh mac/*.command</code>. Các file <code>.ps1</code> / <code>.sh</code> khác là file hệ thống.</p>
   </div>
 </section>
 
@@ -256,8 +256,13 @@
     <h3><span class="badge moi">BUỚC A</span> Trên máy MỚI</h3>
     <ol class="steps li-blue">
       <li>Cài Tailscale và đăng nhập cùng tài khoản (xem Phần 2).</li>
-      <li>Copy toàn bộ thư mục chứa bộ cài (có file <code>Cai-Dat-Sync.cmd</code>) sang máy mới bằng USB hoặc mạng nội bộ.</li>
-      <li>Mở thư mục đó, chạy: <b>Cai-Dat-Sync.cmd</b></li>
+      <li>Copy toàn bộ thư mục bộ cài sang máy mới (USB, AirDrop, mạng nội bộ).</li>
+      <li>Chạy launcher cài đặt:
+        <ul>
+          <li>Windows: <b>Cai-Dat-Sync.cmd</b></li>
+          <li>macOS: <b>mac/cai-dat-sync.command</b> (sau <code>chmod +x mac/*.command</code> nếu lần đầu)</li>
+        </ul>
+      </li>
       <li>
         Khi hỏi "Device ID":
         <ul>
@@ -277,7 +282,12 @@
     <h3><span class="badge cu">BUỚC B</span> Trên máy CŨ (làm trên TỪNG máy cũ)</h3>
     <ol class="steps li-green">
       <li>Nhận "DEVICE ID" của máy mới (từ Buớc A).</li>
-      <li>Chạy: <b>Cai-Dat-Sync.cmd</b> &rarr; Enter.</li>
+      <li>Chạy launcher cài đặt trên máy cũ &rarr; Enter:
+        <ul>
+          <li>Windows: <b>Cai-Dat-Sync.cmd</b></li>
+          <li>macOS: <b>mac/cai-dat-sync.command</b></li>
+        </ul>
+      </li>
       <li>Khi hỏi "Device ID": dán DEVICE ID của máy mới vào &rarr; Enter. (Các máy cũ khác đã biết rồi thì Enter bỏ qua.)</li>
       <li>Xong. Chuyển sang máy cũ tiếp theo, làm lại từ đầu.</li>
     </ol>
@@ -299,8 +309,11 @@
 <section id="phan5">
   <h2><span class="no">5</span> Sử dụng hằng ngày</h2>
   <div class="card bordered">
-    <p>Chỉ cần <b>bỏ file vào</b> thư mục <code>Documents\Sync</code> &mdash; mọi thứ tự động chạy, không cần làm gì thêm.</p>
-    <p>Syncthing bị tắt? Chạy <b>Khoi-Dong-Sync.cmd</b> để bật lại.</p>
+    <p>Chỉ cần <b>bỏ file vào</b> thư mục <code>Documents/Sync</code> &mdash; mọi thứ tự động chạy, không cần làm gì thêm.</p>
+    <p>Syncthing bị tắt?
+      Windows: <b>Khoi-Dong-Sync.cmd</b>.
+      Mac: <b>mac/khoi-dong-sync.command</b>.
+    </p>
   </div>
 </section>
 
@@ -312,12 +325,14 @@
       <summary>Mở hướng dẫn chi tiết</summary>
       <div class="body">
         <ol class="steps">
-          <li>Mở file bằng Notepad: <code>config.ps1</code> (cùng thư mục với Cai-Dat-Sync.cmd)</li>
-          <li>Tìm dòng <code>$Peers = @(</code>.</li>
-          <li>Thêm 1 dòng (bọc trong ngoặc nhọn, ngăn cách bằng dấu phẩy):
-            <p><code>@{ Name = 'Tên máy'; TailscaleIp = 'IP máy'; SyncthingDeviceId = 'DEVICE ID' },</code></p>
+          <li>Mở file <code>config.ini</code> (cùng thư mục với bộ cài) bằng Notepad (Windows) hoặc TextEdit (Mac).</li>
+          <li>Thêm block peer mới, ví dụ:
+            <pre style="background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;font-size:13px">[peer.3]
+name=MacBook
+tailscale_ip=100.x.x.x
+device_id=DEVICE-ID-O-DAY</pre>
           </li>
-          <li>Lưu file, chạy lại: <b>Cai-Dat-Sync.cmd</b> &rarr; Enter (nhấn Enter khi hỏi Device ID, vì đã điền trong file rồi).</li>
+          <li>Lưu file, chạy lại launcher cài đặt &rarr; Enter (bỏ qua khi hỏi Device ID nếu đã điền trong file).</li>
           <li>Làm lại trên <b>từng</b> máy còn lại.</li>
         </ol>
         <table>
@@ -328,6 +343,19 @@
         </table>
       </div>
     </details>
+  </div>
+</section>
+
+<section id="mac">
+  <h2><span class="no">&#63743;</span> macOS — lưu ý thêm</h2>
+  <div class="card green">
+    <ol class="steps li-green">
+      <li>Cài <b>Tailscale</b> từ Mac App Store hoặc <code>tailscale.com</code>, đăng nhập cùng tài khoản với Windows.</li>
+      <li>Cài <b>Homebrew</b> (khuyến nghị) để script tự cài Syncthing: <code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></li>
+      <li>Lần đầu: <code>chmod +x mac/*.sh mac/*.command</code> trong thư mục bộ cài.</li>
+      <li>Double-click <b>mac/cai-dat-sync.command</b> — flow giống Windows (nhập Device ID máy cũ, copy Device ID Mac gửi lại).</li>
+      <li>macOS có thể hỏi quyền mạng / mở Terminal lần đầu — chọn <b>Allow</b>.</li>
+    </ol>
   </div>
 </section>
 
@@ -354,7 +382,7 @@
   </details>
   <details>
     <summary>Thư mục Sync đổi chỗ trên máy mới</summary>
-    <div class="body">Mở <code>config.ps1</code> (xem Phần 6), đổi dòng <code>SyncFolder</code> thành đường dẫn mới trên máy đó.</div>
+    <div class="body">Mở <code>config.ini</code> (xem Phần 6), sửa <code>sync_folder=</code> trong section <code>[local]</code>. Để trống = mặc định <code>~/Documents/Sync</code>.</div>
   </details>
 </section>
 

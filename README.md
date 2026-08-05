@@ -1,57 +1,32 @@
 # GTK-Syncthing
 
-Automatic file sync across multiple Windows machines using **[Syncthing](https://syncthing.net/)** over **[Tailscale](https://tailscale.com/)**.
-
-No coding required — double-click a launcher and follow the on-screen prompts.
+Automatic file sync across **Windows and macOS** — one app, one click.
 
 ---
 
-## Quick start
+## For end users
 
-1. Extract (or clone) this repo to a folder, e.g. `C:\Users\You\Documents\GTK-Syncthing`
-2. Double-click **`Cai-Dat-Sync.cmd`**
-3. Follow the setup wizard
+| | Windows | Mac |
+|---|---------|-----|
+| **Open this** | **`GKG-Sync.cmd`** | **`GKG-Sync.command`** |
 
-For detailed instructions, run **`Huong-Dan.cmd`** or read **`README.txt`** (Vietnamese, plain text).
+Pick an action from the menu:
 
-## Launchers
+1. **Install / Add machine**
+2. **Restart sync**
+3. **Open Sync folder**
+4. **Guide**
+5. **Syncthing dashboard**
 
-| File | Purpose |
-|------|---------|
-| `Cai-Dat-Sync.cmd` | First-time install / add a new machine |
-| `Huong-Dan.cmd` | Open the HTML guide in your browser |
-| `Khoi-Dong-Sync.cmd` | Restart Syncthing if it was stopped |
+Install [Tailscale](https://tailscale.com) first (same account on every machine).
 
-**Default sync folder:** `%USERPROFILE%\Documents\Sync`  
-**Syncthing web UI:** [http://127.0.0.1:8384](http://127.0.0.1:8384)
+Legacy shortcuts (`Cai-Dat-Sync.cmd`, `Bat-Dau-O-Day.cmd`, …) still work — they open the same menu or run one action.
 
-## Requirements
+See **`START-HERE.html`** for a visual guide.
 
-- Windows 10 or 11
-- [Tailscale](https://tailscale.com) — same account on every machine
-- Network connectivity (Syncthing is installed automatically via winget or portable bundle)
+---
 
-## Configuration (optional)
+## Technical notes
 
-On first run, the installer creates `config.ps1` from `config.example.ps1`.
-
-Edit `config.ps1` to pre-fill peer Device IDs in `$Peers` — optional; you can also paste IDs during setup.
-
-> `config.ps1` is local to each machine and is listed in `.gitignore`.
-
-## For maintainers
-
-Build a distributable zip:
-
-```powershell
-.\tao-goi-cai.ps1
-# Output: %USERPROFILE%\Documents\Sync\GKG-Syncthing.zip
-```
-
-## Legacy mode
-
-The `legacy/` folder contains an older SSH/Unison workflow (two machines only). It is not used in the default Syncthing setup.
-
-## Related
-
-The API docs project (`api-document-specification`) lives in the same parent workspace. Use this sync pack to copy formatted doc files between machines — the two projects are independent in code.
+Uses [Syncthing](https://syncthing.net/) over [Tailscale](https://tailscale.com/).  
+Shared config: **`config.ini`**. Build zip: `.\tao-goi-cai.ps1`

@@ -1,5 +1,5 @@
-# GKG-Syncthing - cau hinh mau
-# Lan dau: copy file nay thanh config.ps1 (install.ps1 tu lam neu thieu)
+# LEGACY - uu tien dung config.ini (chung Windows + Mac)
+# Chi giu file nay neu may cu van dung config.ps1
 # Device ID: http://127.0.0.1:8384 -> Action -> Show ID
 
 function ConvertTo-WslPath {

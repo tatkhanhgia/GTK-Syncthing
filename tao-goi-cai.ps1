@@ -4,8 +4,13 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $OutZip = Join-Path $env:USERPROFILE 'Documents\Sync\GKG-Syncthing.zip'
 
 $include = @(
-    'README.txt', 'Cai-Dat-Sync.cmd', 'Huong-Dan.cmd', 'Khoi-Dong-Sync.cmd', 'HUONG-DAN.html',
-    'config.example.ps1', 'install.ps1', 'syncthing-setup.ps1', 'khoi-dong-sync.ps1', 'legacy'
+    'README.txt', 'README.md',
+    'GKG-Sync.cmd', 'GKG-Sync.command', 'menu.ps1',
+    'Bat-Dau-O-Day.cmd', 'Cai-Dat-Sync.cmd', 'Cai-Dat-Cho-Mac.command',
+    'Huong-Dan.cmd', 'Khoi-Dong-Sync.cmd',
+    'START-HERE.html', 'HUONG-DAN.html',
+    'config.example.ini', 'config.example.ps1', 'load-config.ps1', 'preflight.ps1',
+    'install.ps1', 'syncthing-setup.ps1', 'khoi-dong-sync.ps1', 'mac', 'legacy'
 )
 $OutDir = Split-Path $OutZip -Parent
 

@@ -2,15 +2,15 @@
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-$configPath = Join-Path $ScriptDir 'config.ps1'
-if (-not (Test-Path $configPath)) {
+. (Join-Path $ScriptDir 'load-config.ps1')
+try {
+    Import-GkgConfig -ScriptDir $ScriptDir
+} catch {
     Write-Host ''
-    Write-Host '[LOI] Chua co config.ps1. Chay Cai-Dat-Sync.cmd truoc.' -ForegroundColor Red
+    Write-Host '[LOI] Chua co config.ini. Chay Cai-Dat-Sync.cmd truoc.' -ForegroundColor Red
     Write-Host ''
     exit 1
 }
-
-. $configPath
 . (Join-Path $ScriptDir 'syncthing-setup.ps1')
 
 if (-not (Test-SyncthingInstalled -Config $PackConfig)) {
