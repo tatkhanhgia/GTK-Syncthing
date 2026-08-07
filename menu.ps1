@@ -67,7 +67,7 @@ function Open-ManagePage {
         Import-GkgConfig -ScriptDir $ScriptDir
         $url = Get-SyncthingGuiUrl
     } catch {
-        # mac dinh 8384
+        # default 8384
     }
     Start-Process $url | Out-Null
 }
@@ -77,7 +77,7 @@ function Show-MainMenu {
     Add-Type -AssemblyName System.Drawing
 
     $form = New-Object System.Windows.Forms.Form
-    $form.Text = 'GKG Sync - Dong bo file'
+    $form.Text = 'GKG Sync - File sync'
     $form.Size = New-Object System.Drawing.Size(440, 420)
     $form.StartPosition = 'CenterScreen'
     $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
@@ -87,14 +87,14 @@ function Show-MainMenu {
     $form.BackColor = [System.Drawing.Color]::FromArgb(248, 250, 252)
 
     $title = New-Object System.Windows.Forms.Label
-    $title.Text = 'Dong bo file giua cac may'
+    $title.Text = 'Sync files between your machines'
     $title.Font = New-Object System.Drawing.Font('Segoe UI', 14, [System.Drawing.FontStyle]::Bold)
     $title.AutoSize = $true
     $title.Location = New-Object System.Drawing.Point(24, 16)
     $form.Controls.Add($title)
 
     $subtitle = New-Object System.Windows.Forms.Label
-    $subtitle.Text = 'Chon viec ban muon lam:'
+    $subtitle.Text = 'What do you want to do?'
     $subtitle.Font = New-Object System.Drawing.Font('Segoe UI', 10)
     $subtitle.ForeColor = [System.Drawing.Color]::FromArgb(100, 116, 139)
     $subtitle.AutoSize = $true
@@ -126,28 +126,28 @@ function Show-MainMenu {
     $blue = [System.Drawing.Color]::FromArgb(37, 99, 235)
     $slate = [System.Drawing.Color]::FromArgb(100, 116, 139)
 
-    [void](New-MenuButton -Text '1. Cai dat / Them may moi' -Top 82 -BackColor $green -OnClick {
+    [void](New-MenuButton -Text '1. Install / Add machine' -Top 82 -BackColor $green -OnClick {
         Start-InstallConsole
     })
 
-    [void](New-MenuButton -Text '2. Khoi dong lai dong bo' -Top 134 -BackColor $blue -OnClick {
+    [void](New-MenuButton -Text '2. Restart sync' -Top 134 -BackColor $blue -OnClick {
         Start-RestartConsole
     })
 
-    [void](New-MenuButton -Text '3. Mo thu muc Sync' -Top 186 -BackColor $blue -OnClick {
+    [void](New-MenuButton -Text '3. Open Sync folder' -Top 186 -BackColor $blue -OnClick {
         Open-SyncFolder
     })
 
-    [void](New-MenuButton -Text '4. Huong dan' -Top 238 -BackColor $slate -OnClick {
+    [void](New-MenuButton -Text '4. Guide' -Top 238 -BackColor $slate -OnClick {
         Open-Guide
     })
 
-    [void](New-MenuButton -Text '5. Trang quan ly Syncthing' -Top 290 -BackColor $slate -OnClick {
+    [void](New-MenuButton -Text '5. Syncthing dashboard' -Top 290 -BackColor $slate -OnClick {
         Open-ManagePage
     })
 
     $hint = New-Object System.Windows.Forms.Label
-    $hint.Text = 'Lan dau? Bam muc 1, lam theo huong dan trong cua so moi.'
+    $hint.Text = 'First time? Click item 1 and follow the instructions in the new window.'
     $hint.Font = New-Object System.Drawing.Font('Segoe UI', 9)
     $hint.ForeColor = [System.Drawing.Color]::FromArgb(100, 116, 139)
     $hint.AutoSize = $false

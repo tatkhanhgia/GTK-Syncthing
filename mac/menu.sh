@@ -11,8 +11,8 @@ source "$MAC_DIR/load-config.sh" 2>/dev/null || true
 
 mac_choose() {
     osascript <<'APPLESCRIPT'
-set choices to {"1. Cai dat / Them may moi", "2. Khoi dong lai dong bo", "3. Mo thu muc Sync", "4. Huong dan", "5. Trang quan ly Syncthing"}
-set picked to choose from list choices with title "GKG Sync" with prompt "Chon viec ban muon lam:" default items {"1. Cai dat / Them may moi"}
+set choices to {"1. Install / Add machine", "2. Restart sync", "3. Open Sync folder", "4. Guide", "5. Syncthing dashboard"}
+set picked to choose from list choices with title "GKG Sync" with prompt "What do you want to do?" default items {"1. Install / Add machine"}
 if picked is false then
     return "CANCEL"
 else
@@ -64,27 +64,27 @@ run_restart() {
 dispatch_action() {
     local choice="$1"
     case "$choice" in
-        *"Cai dat"*|*"1."*)
+        *"Install"*|*"1."*)
             run_install
             ;;
-        *"Khoi dong"*|*"2."*)
+        *"Restart"*|*"2."*)
             run_restart
             ;;
-        *"thu muc"*|*"3."*)
+        *"folder"*|*"3."*)
             open_sync_folder
-            mac_alert "Da mo thu muc Sync."
+            mac_alert "Opened Sync folder."
             ;;
-        *"Huong dan"*|*"4."*)
+        *"Guide"*|*"4."*)
             open_guide
             ;;
-        *"quan ly"*|*"5."*)
+        *"dashboard"*|*"5."*)
             open_manage
             ;;
         CANCEL)
             exit 0
             ;;
         *)
-            mac_alert "Khong ro lua chon."
+            mac_alert "Unknown choice."
             exit 1
             ;;
     esac
@@ -100,8 +100,8 @@ main_menu_loop() {
         dispatch_action "$choice"
 
         local again
-        again="$(osascript -e 'button returned of (display alert "GKG Sync" message "Ban muon lam viec khac?" buttons {"Dong", "Chon tiep"} default button "Chon tiep")' 2>/dev/null || echo "Dong")"
-        if [[ "$again" != "Chon tiep" ]]; then
+        again="$(osascript -e 'button returned of (display alert "GKG Sync" message "Do you want to do another action?" buttons {"Close", "Next"} default button "Next")' 2>/dev/null || echo "Close")"
+        if [[ "$again" != "Next" ]]; then
             exit 0
         fi
     done

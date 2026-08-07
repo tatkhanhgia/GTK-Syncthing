@@ -1,13 +1,13 @@
-DONG BO FILE - CHI CAN 1 FILE
-==============================
+FILE SYNC - ONE FILE IS ALL YOU NEED
+====================================
 
 WINDOWS:  Double-click  GKG-Sync.cmd
 MAC:      Double-click  GKG-Sync.command
 
-Chon viec trong menu (cai dat, khoi dong lai, mo thu muc...).
+Pick an action from the menu (install, restart sync, open folder...).
 
-Lan dau: chon "Cai dat / Them may moi", cai Tailscale truoc (cung tai khoan moi may).
+First time: choose "Install / Add machine", install Tailscale first (same account on every machine).
 
-Thu muc dong bo: Documents/Sync
+Sync folder: Documents/Sync
 
-(Cac file Cai-Dat-Sync, Bat-Dau-O-Day... van dung duoc — tro vao menu chinh.)
+(Legacy shortcuts Cai-Dat-Sync, Bat-Dau-O-Day... still work — they open the main menu.)

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Khoi dong Syncthing va mo thu muc sync (macOS)
+# Start Syncthing and open the Sync folder (macOS)
 
 set -euo pipefail
 
@@ -13,31 +13,31 @@ source "$MAC_DIR/syncthing-setup.sh"
 
 if ! load_gkg_config "$GKG_ROOT"; then
     echo ''
-    write_err 'Chua co config.ini. Chay mac/cai-dat-sync.command truoc.'
+    write_err 'No config.ini found. Run mac/cai-dat-sync.command first.'
     echo ''
     exit 1
 fi
 
 if ! test_syncthing_installed; then
     echo ''
-    write_err 'Syncthing chua duoc cai.'
-    echo 'Chay mac/cai-dat-sync.command truoc.'
+    write_err 'Syncthing is not installed.'
+    echo 'Run mac/cai-dat-sync.command first.'
     echo ''
     exit 1
 fi
 
 echo ''
-write_info 'Dang khoi dong Syncthing...'
+write_info 'Starting Syncthing...'
 start_syncthing_process
 sleep 2
 
-write_ok 'Mo thu muc sync...'
+write_ok 'Opening Sync folder...'
 open "$SYNC_FOLDER" 2>/dev/null || true
 
 url="$(get_syncthing_gui_url)"
-write_ok "Trang quan ly: $url"
+write_ok "Syncthing management page: $url"
 open "$url" 2>/dev/null || true
 
 echo ''
-write_ok 'Xong. File trong thu muc Sync se tu dong dong bo.'
+write_ok 'Done. Files in the Sync folder will sync automatically.'
 echo ''

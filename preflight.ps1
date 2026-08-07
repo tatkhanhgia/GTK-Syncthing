@@ -1,4 +1,4 @@
-# Kiem tra truoc khi cai (Windows)
+# Pre-install checks (Windows)
 
 function Test-TailscaleReady {
     if (Get-Command tailscale -ErrorAction SilentlyContinue) {
@@ -17,17 +17,17 @@ function Ensure-Tailscale {
     }
 
     Write-Host ''
-    Write-Host 'Chua thay Tailscale dang chay.' -ForegroundColor Yellow
-    Write-Host 'Ban can cai Tailscale va dang nhap CUNG tai khoan tren moi may.'
+    Write-Host 'Tailscale is not running.' -ForegroundColor Yellow
+    Write-Host 'Install Tailscale and sign in with the same account on every machine.'
     Write-Host ''
-    Write-Host 'Dang mo trang tai Tailscale...' -ForegroundColor Cyan
+    Write-Host 'Opening the Tailscale download page...' -ForegroundColor Cyan
     Start-Process 'https://tailscale.com/download/windows' | Out-Null
     Write-Host ''
-    Write-Host 'Sau khi cai xong Tailscale, nhan Enter de tiep tuc...' -ForegroundColor Yellow
+    Write-Host 'After installing Tailscale, press Enter to continue...' -ForegroundColor Yellow
     Read-Host | Out-Null
 
     if (-not (Test-TailscaleReady)) {
-        Write-Warn 'Van chua thay Tailscale. Tiep tuc cai dat Syncthing — co the ket noi sau.'
+        Write-Warn 'Tailscale still not detected. Continuing Syncthing setup — you can connect later.'
     }
 }
 
@@ -37,9 +37,9 @@ function Copy-DeviceIdToClipboard {
 
     try {
         Set-Clipboard -Value $DeviceId
-        Write-Ok 'Da copy Device ID vao clipboard (Ctrl+V de dan).'
+        Write-Ok 'Device ID copied to clipboard (paste with Ctrl+V).'
     } catch {
-        Write-Warn 'Khong copy duoc tu dong — hay copy bang tay tu man hinh ket qua.'
+        Write-Warn 'Could not copy automatically — copy manually from the result screen.'
     }
 }
 
@@ -59,13 +59,13 @@ function Show-DeviceIdDialog {
     try {
         Add-Type -AssemblyName System.Windows.Forms
         [System.Windows.Forms.MessageBox]::Show(
-            "DEVICE ID MAY NAY (da copy vao clipboard):`n`n$DeviceId`n`nGui dong nay cho nguoi dung may KIA, roi chay Cai-Dat-Sync tren may do.",
-            'GKG Sync - Cai dat xong',
+            "YOUR DEVICE ID (copied to clipboard):`n`n$DeviceId`n`nSend this to the other user, then run Cai-Dat-Sync on that machine.",
+            'GKG Sync - Setup complete',
             [System.Windows.Forms.MessageBoxButtons]::OK,
             [System.Windows.Forms.MessageBoxIcon]::Information
         ) | Out-Null
     } catch {
-        Write-Host 'DEVICE ID MAY NAY:' -ForegroundColor Yellow
+        Write-Host 'YOUR DEVICE ID:' -ForegroundColor Yellow
         Write-Host $DeviceId -ForegroundColor White
     }
 }
@@ -74,33 +74,33 @@ function Invoke-SetupWizard {
     param([string[]]$ExistingIds = @())
 
     Write-Host ''
-    Write-Host '--- Buoc 1: Loai may ---' -ForegroundColor Cyan
-    Write-Host '  1 = May MOI   (may nay moi them vao, chua ai sync voi may nay)'
-    Write-Host '  2 = May CU    (da co may khac dung sync, dang noi may nay vao)'
+    Write-Host '--- Step 1: Machine type ---' -ForegroundColor Cyan
+    Write-Host '  1 = NEW machine   (adding this machine for the first time)'
+    Write-Host '  2 = EXISTING machine   (other machines already sync; connecting this one)'
     Write-Host ''
-    $role = Read-Host 'Ban chon 1 hay 2'
+    $role = Read-Host 'Choose 1 or 2'
 
     $ids = [System.Collections.ArrayList]@($ExistingIds)
 
     if ($role -eq '2') {
         Write-Host ''
-        Write-Host '--- Buoc 2: Device ID may MOI ---' -ForegroundColor Cyan
-        Write-Host 'Nguoi dung may MOI se gui cho ban mot dai ky tu (Device ID).'
-        Write-Host 'Dan vao day (Enter neu chua co):'
-        $newId = Read-Host 'Device ID may moi'
+        Write-Host '--- Step 2: New machine Device ID ---' -ForegroundColor Cyan
+        Write-Host 'The NEW machine user will send you a long string (Device ID).'
+        Write-Host 'Paste it here (Enter if none yet):'
+        $newId = Read-Host 'New machine Device ID'
         if ($newId -and $newId.Trim()) {
             [void]$ids.Add($newId.Trim())
         }
     } else {
         Write-Host ''
-        Write-Host '--- Buoc 2: Device ID may CU (neu co) ---' -ForegroundColor Cyan
-        Write-Host 'Neu may cu da gui Device ID — dan vao. Khong co thi Enter bo qua.'
+        Write-Host '--- Step 2: Existing machine Device IDs (if any) ---' -ForegroundColor Cyan
+        Write-Host 'If an existing machine sent a Device ID — paste it. Press Enter to skip.'
         while ($true) {
-            $line = Read-Host 'Device ID may cu (Enter = xong)'
+            $line = Read-Host 'Existing machine Device ID (Enter = done)'
             if (-not $line) { break }
             $trimmed = $line.Trim()
             if ($ids -contains $trimmed) {
-                Write-Warn 'Da co roi, bo qua.'
+                Write-Warn 'Already added; skipping.'
                 continue
             }
             [void]$ids.Add($trimmed)
@@ -125,11 +125,11 @@ function Write-InstallResultHtml {
 
     @"
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cai dat xong - GKG Sync</title>
+<title>Setup complete - GKG Sync</title>
 <style>
   body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 20px;background:#f0fdf4;color:#0f172a}
   .card{background:#fff;border:2px solid #16a34a;border-radius:16px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
@@ -143,22 +143,22 @@ function Write-InstallResultHtml {
 </head>
 <body>
 <div class="card">
-  <h1>Cai dat xong!</h1>
-  <p>Thu muc dong bo: <b>$safeFolder</b></p>
-  <p><b>DEVICE ID MAY NAY</b> — gui cho nguoi dung may KIA:</p>
+  <h1>Setup complete!</h1>
+  <p>Sync folder: <b>$safeFolder</b></p>
+  <p><b>YOUR DEVICE ID</b> — send this to the other user:</p>
   <div class="id" id="did">$safeId</div>
   <button type="button" onclick="copyId()">Copy Device ID</button>
-  <button type="button" class="secondary" onclick="location.href='$safeUrl'">Mo trang quan ly Syncthing</button>
-  <div class="step"><b>Tiep theo:</b> Tren may KIA, chay <b>Cai-Dat-Sync</b> (Windows) hoac <b>Cai-Dat-Cho-Mac</b> (Mac), dan Device ID o tren, Enter.</div>
-  <div class="step">Sau do tha file vao thu muc Sync — cac may tu dong dong bo.</div>
+  <button type="button" class="secondary" onclick="location.href='$safeUrl'">Open Syncthing management page</button>
+  <div class="step"><b>Next:</b> On the other machine, run <b>Cai-Dat-Sync</b> (Windows) or <b>Cai-Dat-Cho-Mac</b> (Mac), paste the Device ID above, then press Enter.</div>
+  <div class="step">Then add files into the Sync folder — the machines will sync automatically.</div>
 </div>
 <script>
 function copyId(){
   var t=document.getElementById('did').innerText;
   navigator.clipboard.writeText(t).then(function(){
-    alert('Da copy Device ID! Dan (Ctrl+V / Cmd+V) gui cho may kia.');
+    alert('Device ID copied! Paste it on the other machine.');
   }).catch(function(){
-    prompt('Copy bang tay:', t);
+    prompt('Copy manually:', t);
   });
 }
 copyId();

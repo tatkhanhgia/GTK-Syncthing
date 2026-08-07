@@ -1,4 +1,4 @@
-# Tao file zip phan phoi (chay tu thu muc goc project)
+# Build distribution zip (run from project root)
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $OutZip = Join-Path $env:USERPROFILE 'Documents\Sync\GKG-Syncthing.zip'
@@ -29,5 +29,5 @@ if (Test-Path $OutZip) { Remove-Item -Force $OutZip }
 Compress-Archive -Path (Join-Path $staging '*') -DestinationPath $OutZip -Force
 Remove-Item -Recurse -Force $staging
 
-Write-Host "Da tao: $OutZip" -ForegroundColor Green
+Write-Host "Created: $OutZip" -ForegroundColor Green
 Get-Item $OutZip | Select-Object FullName, Length, LastWriteTime

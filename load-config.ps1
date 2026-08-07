@@ -1,4 +1,4 @@
-# Doc config.ini chung cho Windows (va tuong thich config.ps1 cu)
+# Shared config.ini loader for Windows (legacy config.ps1 compatible)
 
 function Read-IniFile {
     param([string]$Path)
@@ -45,6 +45,169 @@ function Expand-ConfigPath {
     return $expanded
 }
 
+function Get-LocalTailscaleIp {
+    if (-not (Get-Command tailscale -ErrorAction SilentlyContinue)) {
+        return $null
+    }
+    try {
+        $ip = (& tailscale ip -4 2>$null | Select-Object -First 1)
+        if ($ip) { return $ip.ToString().Trim() }
+    } catch { }
+    return $null
+}
+
+function Set-IniSectionValue {
+    param(
+        [string]$IniPath,
+        [string]$Section,
+        [string]$Key,
+        [string]$Value
+    )
+
+    $lines = Get-Content -LiteralPath $IniPath -Encoding UTF8
+    $out = New-Object System.Collections.Generic.List[string]
+    $inSection = $false
+    $foundKey = $false
+    $seenSection = $false
+
+    foreach ($line in $lines) {
+        if ($line -match '^\[(.+)\]\s*$') {
+            if ($inSection -and -not $foundKey) {
+                $out.Add("${Key}=${Value}")
+                $foundKey = $true
+            }
+            $inSection = ($Matches[1] -eq $Section)
+            if ($inSection) { $seenSection = $true }
+            $out.Add($line)
+            continue
+        }
+
+        if ($inSection -and $line -match "^\s*$([regex]::Escape($Key))\s*=") {
+            $out.Add("${Key}=${Value}")
+            $foundKey = $true
+            continue
+        }
+
+        $out.Add($line)
+    }
+
+    if ($inSection -and -not $foundKey) {
+        $out.Add("${Key}=${Value}")
+        $foundKey = $true
+    }
+
+    if (-not $seenSection) {
+        $out.Add('')
+        $out.Add("[$Section]")
+        $out.Add("${Key}=${Value}")
+    }
+
+    $out | Set-Content -LiteralPath $IniPath -Encoding UTF8
+}
+
+function Test-IniPeerDeviceExists {
+    param(
+        [string]$IniPath,
+        [string]$DeviceId
+    )
+
+    $ini = Read-IniFile -Path $IniPath
+    foreach ($sectionName in ($ini.Keys | Sort-Object)) {
+        if ($sectionName -match '^peer\.') {
+            $peerId = $ini[$sectionName]['device_id']
+            if ($peerId -and $peerId.Trim() -eq $DeviceId.Trim()) {
+                return $true
+            }
+        }
+    }
+    return $false
+}
+
+function Get-NextPeerIndex {
+    param([string]$IniPath)
+
+    $ini = Read-IniFile -Path $IniPath
+    $max = 0
+    foreach ($sectionName in $ini.Keys) {
+        if ($sectionName -match '^peer\.(\d+)$') {
+            $n = [int]$Matches[1]
+            if ($n -gt $max) { $max = $n }
+        }
+    }
+    return ($max + 1)
+}
+
+function Update-LocalTailscaleIpInConfig {
+    param([string]$IniPath)
+
+    $ini = Read-IniFile -Path $IniPath
+    $current = $ini['local']['tailscale_ip']
+    if ($current -and $current.Trim() -and $current.Trim() -ne 'CHANGE-ME') {
+        return
+    }
+
+    $ip = Get-LocalTailscaleIp
+    if ($ip) {
+        Set-IniSectionValue -IniPath $IniPath -Section 'local' -Key 'tailscale_ip' -Value $ip
+    }
+}
+
+function Save-GkgConfigAfterInstall {
+    param(
+        [string]$IniPath,
+        [string]$DeviceId,
+        [string[]]$AddedPeerIds = @()
+    )
+
+    if (-not (Test-Path $IniPath)) { return }
+
+    $machineName = $script:PackConfig.LocalMachineName
+    if (-not $machineName) {
+        $machineName = $env:COMPUTERNAME
+    }
+
+    Set-IniSectionValue -IniPath $IniPath -Section 'local' -Key 'machine_name' -Value $machineName
+
+    $ip = Get-LocalTailscaleIp
+    if ($ip) {
+        Set-IniSectionValue -IniPath $IniPath -Section 'local' -Key 'tailscale_ip' -Value $ip
+    }
+
+    Set-IniSectionValue -IniPath $IniPath -Section 'local' -Key 'device_id' -Value $DeviceId
+
+    foreach ($peerId in $AddedPeerIds) {
+        if (-not $peerId) { continue }
+        $peerId = $peerId.Trim()
+        if (-not $peerId -or $peerId -eq $DeviceId) { continue }
+        if (Test-IniPeerDeviceExists -IniPath $IniPath -DeviceId $peerId) { continue }
+
+        $next = Get-NextPeerIndex -IniPath $IniPath
+        Add-Content -LiteralPath $IniPath -Encoding UTF8 -Value @(
+            '',
+            "[peer.$next]",
+            "name=Remote device $next",
+            'tailscale_ip=CHANGE-ME',
+            "device_id=$peerId"
+        )
+    }
+}
+
+function Clear-DuplicateLocalDeviceId {
+    param([string]$IniPath)
+
+    if (-not (Test-Path $IniPath)) { return }
+
+    $ini = Read-IniFile -Path $IniPath
+    $localId = $ini['local']['device_id']
+    if (-not $localId) { return }
+    $localId = $localId.Trim()
+    if (-not $localId) { return }
+
+    if (Test-IniPeerDeviceExists -IniPath $IniPath -DeviceId $localId) {
+        Set-IniSectionValue -IniPath $IniPath -Section 'local' -Key 'device_id' -Value ''
+    }
+}
+
 function Export-LegacyConfigToIni {
     param(
         [string]$ScriptDir,
@@ -59,6 +222,7 @@ function Export-LegacyConfigToIni {
         '[local]'
         "machine_name=$LocalMachineName"
         "tailscale_ip=$LocalMachineIp"
+        'device_id='
         "sync_folder=$($PackConfig.SyncFolder)"
         ''
         '[syncthing]'
@@ -78,7 +242,7 @@ function Export-LegacyConfigToIni {
     }
 
     $lines | Set-Content -LiteralPath $IniPath -Encoding UTF8
-    Write-Host 'Da chuyen config.ps1 -> config.ini (dung chung Windows + Mac)' -ForegroundColor Green
+    Write-Host 'Migrated config.ps1 -> config.ini (shared Windows + Mac)' -ForegroundColor Green
     Write-Host ''
 }
 
@@ -94,12 +258,16 @@ function Import-GkgConfig {
             Export-LegacyConfigToIni -ScriptDir $ScriptDir -IniPath $iniPath
         } elseif (Test-Path $examplePath) {
             Copy-Item $examplePath $iniPath
-            Write-Host 'Da tao config.ini tu config.example.ini' -ForegroundColor Yellow
+            Write-Host 'Created config.ini from config.example.ini' -ForegroundColor Yellow
             Write-Host ''
         } else {
-            throw 'Khong tim thay config.ini hoac config.example.ini'
+            throw 'Could not find config.ini or config.example.ini'
         }
     }
+
+    $script:ConfigIniPath = $iniPath
+
+    Update-LocalTailscaleIpInConfig -IniPath $iniPath
 
     $ini = Read-IniFile -Path $iniPath
     $local = $ini['local']
@@ -186,7 +354,22 @@ function Get-PeerList {
 
 function Get-PeerDeviceIds {
     param($Peers = $script:Peers)
-    return @($Peers | ForEach-Object { $_.SyncthingDeviceId.Trim() } | Where-Object { $_ })
+
+    $selfId = $null
+    if ($script:ConfigIniPath -and (Test-Path $script:ConfigIniPath)) {
+        $ini = Read-IniFile -Path $script:ConfigIniPath
+        if ($ini['local'] -and $ini['local']['device_id']) {
+            $selfId = $ini['local']['device_id'].Trim()
+        }
+    }
+
+    return @(
+        $Peers |
+            ForEach-Object { $_.SyncthingDeviceId.Trim() } |
+            Where-Object {
+                $_ -and (-not $selfId -or $_ -ne $selfId)
+            }
+    )
 }
 
 function Get-SyncRemoteUri {

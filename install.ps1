@@ -11,17 +11,23 @@ $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
 . (Join-Path $ScriptDir 'load-config.ps1')
+
+$iniPath = Join-Path $ScriptDir 'config.ini'
+Clear-DuplicateLocalDeviceId -IniPath $iniPath
 Import-GkgConfig -ScriptDir $ScriptDir
+Update-LocalTailscaleIpInConfig -IniPath $iniPath
+Import-GkgConfig -ScriptDir $ScriptDir
+
 . (Join-Path $ScriptDir 'syncthing-setup.ps1')
 . (Join-Path $ScriptDir 'preflight.ps1')
 
 function Show-Banner {
     Write-Host ''
     Write-Host '========================================' -ForegroundColor Green
-    Write-Host '   DONG BO FILE - TU DONG CAI DAT' -ForegroundColor Green
+    Write-Host '   FILE SYNC - ONE-CLICK INSTALLER' -ForegroundColor Green
     Write-Host '========================================' -ForegroundColor Green
     Write-Host ''
-    Write-Host 'Chi can lam theo huong dan tung buoc.' -ForegroundColor DarkGray
+    Write-Host 'Just follow the step-by-step instructions.' -ForegroundColor DarkGray
     Write-Host ''
 }
 
@@ -36,12 +42,12 @@ function Show-SyncthingResult {
 
     Write-Host ''
     Write-Host '========================================' -ForegroundColor Green
-    Write-Host '   CAI DAT XONG!' -ForegroundColor Green
+    Write-Host '   SETUP COMPLETE!' -ForegroundColor Green
     Write-Host '========================================' -ForegroundColor Green
     Write-Host ''
-    Write-Ok "Thu muc sync: $($Result.SyncFolder)"
+    Write-Ok "Sync folder: $($Result.SyncFolder)"
     Write-Host ''
-    Write-Host 'Trang ket qua dang mo — bam Copy Device ID va gui cho may KIA.' -ForegroundColor Cyan
+    Write-Host 'Result page opened — click Copy Device ID and send it to the other machine(s).' -ForegroundColor Cyan
     Write-Host ''
 
     Show-DeviceIdDialog -DeviceId $Result.DeviceId -HtmlPath $htmlPath
@@ -49,41 +55,51 @@ function Show-SyncthingResult {
     try {
         Start-Process $Result.GuiUrl | Out-Null
     } catch {
-        Write-Warn "Mo trinh duyet thu cong: $($Result.GuiUrl)"
+        Write-Warn "Open browser manually: $($Result.GuiUrl)"
     }
 }
 
 function Install-SshMode {
     $legacyDir = Join-Path $ScriptDir 'legacy'
-    Write-Info 'Che do nang cao: SSH + Unison (legacy)'
+    Write-Info 'Advanced mode: SSH + Unison (legacy)'
     $installUnison = Join-Path $legacyDir 'install-unison.cmd'
     $setupSync = Join-Path $legacyDir 'setup-sync.cmd'
 
     if (-not (Test-Path $installUnison)) {
-        throw "Khong tim thay: $installUnison"
+        throw "Not found: $installUnison"
     }
 
     Write-Host ''
-    Write-Warn 'Che do nay can WSL + Unison. Chi ho tro 2 may.'
+    Write-Warn 'This mode requires WSL + Unison. Supports only 2 machines.'
     Write-Host ''
 
     cmd /c "`"$installUnison`""
     cmd /c "`"$setupSync`""
 
     Write-Host ''
-    Write-Ok 'SSH sync da setup. Chay sync bang: legacy\sync-folder.cmd'
+    Write-Ok 'SSH sync is set up. Run sync with: legacy\sync-folder.cmd'
     Write-Host ''
 }
 
 Show-Banner
 Ensure-Tailscale
 
+$iniPath = Join-Path $ScriptDir 'config.ini'
+Update-LocalTailscaleIpInConfig -IniPath $iniPath
+
+$configPeerIds = @(Get-PeerDeviceIds)
+$wizardPeerIds = @()
+
+if ($configPeerIds.Count -gt 0) {
+    Write-Info "Using $($configPeerIds.Count) peer(s) from config.ini"
+}
+
 if ($Mode -eq 'Menu') {
-    Write-Host 'Chon che do cai dat:' -ForegroundColor Cyan
-    Write-Host '  [1] Syncthing - mac dinh (tu dong sync nhieu may)'
-    Write-Host '  [2] SSH/Unison - nang cao (legacy, chi 2 may)'
+    Write-Host 'Choose install mode:' -ForegroundColor Cyan
+    Write-Host '  [1] Syncthing - default (automatic multi-machine sync)'
+    Write-Host '  [2] SSH/Unison - advanced (legacy, 2 machines only)'
     Write-Host ''
-    $choice = Read-Host 'Nhap 1 hoac 2 (mac dinh: 1)'
+    $choice = Read-Host 'Enter 1 or 2 (default: 1)'
     if (-not $choice -or $choice -eq '1') {
         $Mode = 'Syncthing'
     } else {
@@ -92,17 +108,22 @@ if ($Mode -eq 'Menu') {
 }
 
 if ($Mode -eq 'Syncthing') {
+    $RemoteDeviceIds = @($configPeerIds)
+
     if ($RemoteDeviceIds.Count -eq 0) {
         if ($SkipPrompt) {
             $RemoteDeviceIds = @(Get-PeerDeviceIds)
         } else {
-            $RemoteDeviceIds = Invoke-SetupWizard -ExistingIds @(Get-PeerDeviceIds)
+            $wizardPeerIds = @(Invoke-SetupWizard -ExistingIds @(Get-PeerDeviceIds))
+            $RemoteDeviceIds = @($wizardPeerIds)
         }
     }
 
     Write-Host ''
-    Write-Info 'Dang cai dat... (cho vai phut)'
+    Write-Info 'Installing... (this may take a few minutes)'
     $result = Install-SyncthingMode -Config $PackConfig -RemoteDeviceIds $RemoteDeviceIds
+    Save-GkgConfigAfterInstall -IniPath $iniPath -DeviceId $result.DeviceId -AddedPeerIds $wizardPeerIds
+    Write-Ok "Updated config.ini with this machine's Device ID"
     Show-SyncthingResult -Result $result
     exit 0
 }
@@ -112,4 +133,4 @@ if ($Mode -eq 'Ssh') {
     exit 0
 }
 
-throw "Che do khong hop le: $Mode"
+throw "Invalid mode: $Mode"

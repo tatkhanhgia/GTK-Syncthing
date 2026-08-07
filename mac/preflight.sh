@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Kiem tra truoc khi cai (macOS)
+# Pre-install checks (macOS)
 
 test_tailscale_ready() {
     command -v tailscale >/dev/null 2>&1 || return 1
@@ -13,13 +13,13 @@ ensure_tailscale() {
     fi
 
     echo ''
-    write_warn 'Chua thay Tailscale dang chay.'
-    echo 'Ban can cai Tailscale va dang nhap CUNG tai khoan tren moi may.'
+    write_warn 'Tailscale is not running.'
+    echo 'Install Tailscale and sign in with the same account on every machine.'
     echo ''
-    write_info 'Dang mo trang tai Tailscale...'
+    write_info 'Opening the Tailscale download page...'
     open 'https://tailscale.com/download/macos' 2>/dev/null || true
     echo ''
-    echo 'Sau khi cai xong Tailscale, nhan Enter de tiep tuc...'
+    echo 'After installing Tailscale, press Enter to continue...'
     read -r _
 }
 
@@ -27,7 +27,7 @@ copy_device_id_to_clipboard() {
     local device_id="$1"
     [[ -z "$device_id" ]] && return
     if printf '%s' "$device_id" | pbcopy 2>/dev/null; then
-        write_ok 'Da copy Device ID vao clipboard (Cmd+V de dan).'
+        write_ok 'Device ID copied to clipboard (paste with Cmd+V).'
     fi
 }
 
@@ -35,7 +35,7 @@ mac_ask() {
     local title="$1"
     local prompt="$2"
     local default="${3:-}"
-    osascript -e "display dialog \"$prompt\" with title \"$title\" default answer \"$default\" buttons {\"Huy\", \"OK\"} default button \"OK\"" -e 'text returned of result' 2>/dev/null || true
+    osascript -e "display dialog \"$prompt\" with title \"$title\" default answer \"$default\" buttons {\"Cancel\", \"OK\"} default button \"OK\"" -e 'text returned of result' 2>/dev/null || true
 }
 
 mac_alert() {
@@ -48,9 +48,9 @@ invoke_setup_wizard() {
     local -a ids=("$@")
     local role line trimmed dup choice new_id
 
-    echo ''
-    echo '--- Buoc 1: Loai may ---'
-    choice="$(mac_ask 'GKG Sync' 'Ban la may MOI (1) hay may CU (2)?\n\n1 = May moi them vao\n2 = May cu da co sync' '1')"
+    echo '' >&2
+    echo '--- Step 1: Machine type ---' >&2
+    choice="$(mac_ask 'GKG Sync' 'Are you setting up a NEW machine (1) or an EXISTING machine (2)?\n\n1 = Add this new machine\n2 = This machine was already synced' '1')"
     choice="$(echo "$choice" | xargs)"
 
     if [[ "$choice" == "2" ]]; then
@@ -60,18 +60,18 @@ invoke_setup_wizard() {
     fi
 
     if [[ "$role" -eq 2 ]]; then
-        echo ''
-        echo '--- Buoc 2: Device ID may MOI ---'
-        new_id="$(mac_ask 'GKG Sync' 'Dan Device ID ma may MOI gui cho ban:\n(Khong co thi de trong va bam OK)' '')"
+        echo '' >&2
+        echo '--- Step 2: New machine Device ID ---' >&2
+        new_id="$(mac_ask 'GKG Sync' 'Paste the NEW machine''s Device ID that it will share with you:\n(Leave blank and press OK if none)' '')"
         new_id="$(echo "$new_id" | xargs)"
         if [[ -n "$new_id" ]]; then
             ids+=("$new_id")
         fi
     else
-        echo ''
-        echo '--- Buoc 2: Device ID may CU (neu co) ---'
+        echo '' >&2
+        echo '--- Step 2: Existing machine Device IDs (if any) ---' >&2
         while true; do
-            line="$(mac_ask 'GKG Sync' 'Dan Device ID may CU (Enter/OK trong neu khong co):\nBam Huy khi xong.' '')"
+            line="$(mac_ask 'GKG Sync' 'Paste the Device ID of an EXISTING machine.\nPress Cancel when finished.' '')"
             line="$(echo "$line" | xargs)"
             [[ -z "$line" ]] && break
             dup=0
@@ -82,7 +82,7 @@ invoke_setup_wizard() {
                 fi
             done
             if [[ $dup -eq 1 ]]; then
-                write_warn 'Da co roi, bo qua.'
+                write_warn 'Already added; skipping.'
                 continue
             fi
             ids+=("$line")
@@ -101,11 +101,11 @@ write_install_result_html() {
 
     cat > "$out_path" <<HTMLEOF
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cai dat xong - GKG Sync</title>
+<title>Setup complete - GKG Sync</title>
 <style>
   body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 20px;background:#f0fdf4;color:#0f172a}
   .card{background:#fff;border:2px solid #16a34a;border-radius:16px;padding:28px;box-shadow:0 4px 20px rgba(0,0,0,.08)}
@@ -119,22 +119,22 @@ write_install_result_html() {
 </head>
 <body>
 <div class="card">
-  <h1>Cai dat xong!</h1>
-  <p>Thu muc dong bo: <b>${sync_folder}</b></p>
-  <p><b>DEVICE ID MAY NAY</b> — gui cho nguoi dung may KIA:</p>
+  <h1>Setup complete!</h1>
+  <p>Sync folder: <b>${sync_folder}</b></p>
+  <p><b>YOUR DEVICE ID</b> — send this to the other user:</p>
   <div class="id" id="did">${device_id}</div>
   <button type="button" onclick="copyId()">Copy Device ID</button>
-  <button type="button" class="secondary" onclick="location.href='${gui_url}'">Mo trang quan ly Syncthing</button>
-  <div class="step"><b>Tiep theo:</b> Tren may KIA, chay <b>Cai-Dat-Sync</b> (Windows) hoac <b>Cai-Dat-Cho-Mac</b> (Mac), dan Device ID o tren.</div>
-  <div class="step">Sau do tha file vao thu muc Sync — cac may tu dong dong bo.</div>
+  <button type="button" class="secondary" onclick="location.href='${gui_url}'">Open Syncthing management page</button>
+  <div class="step"><b>Next:</b> On the other machine, run <b>Cai-Dat-Sync</b> (Windows) or <b>Cai-Dat-Cho-Mac</b> (Mac), then paste the Device ID above.</div>
+  <div class="step">Then add files into the Sync folder — the machines will sync automatically.</div>
 </div>
 <script>
 function copyId(){
   var t=document.getElementById('did').innerText;
   navigator.clipboard.writeText(t).then(function(){
-    alert('Da copy Device ID! Dan Cmd+V gui cho may kia.');
+    alert('Device ID copied! Paste it on the other machine.');
   }).catch(function(){
-    prompt('Copy bang tay:', t);
+    prompt('Copy manually:', t);
   });
 }
 copyId();
@@ -155,5 +155,5 @@ show_device_id_result() {
         open "$html_path" 2>/dev/null || true
     fi
 
-    mac_alert 'GKG Sync - Cai dat xong' "DEVICE ID MAY NAY (da copy):\n\n${device_id}\n\nGui cho nguoi dung may KIA."
+    mac_alert 'GKG Sync - Setup complete' "YOUR DEVICE ID (copied):\n\n${device_id}\n\nSend it to the other user."
 }

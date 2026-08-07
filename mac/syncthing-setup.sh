@@ -35,32 +35,32 @@ get_syncthing_exe() {
 }
 
 install_syncthing_package() {
-    write_info 'Dang cai Syncthing...'
+    write_info 'Installing Syncthing...'
 
     if command -v syncthing >/dev/null 2>&1; then
-        write_ok 'Syncthing da co san.'
+        write_ok 'Syncthing is already available.'
         return
     fi
 
     if command -v brew >/dev/null 2>&1; then
-        echo 'Thu cai bang Homebrew...'
+        echo 'Installing via Homebrew...'
         if brew list syncthing >/dev/null 2>&1; then
-            write_ok 'Syncthing da duoc cai qua Homebrew.'
+            write_ok 'Syncthing has already been installed via Homebrew.'
             return
         fi
         brew install syncthing
-        write_ok 'Da cai Syncthing bang Homebrew.'
+        write_ok 'Syncthing installed via Homebrew.'
         return
     fi
 
     local install_root="$INSTALL_DIR/syncthing"
     local exe_path="$install_root/syncthing"
     if [[ -x "$exe_path" ]]; then
-        write_ok 'Syncthing portable da co san.'
+        write_ok 'Syncthing portable is already present.'
         return
     fi
 
-    echo 'Tai Syncthing portable...'
+    echo 'Downloading Syncthing portable...'
     mkdir -p "$install_root"
     local zip_path arch url
     zip_path="$(mktemp /tmp/syncthing-macos.XXXXXX.zip)"
@@ -77,33 +77,33 @@ install_syncthing_package() {
     local extracted
     extracted="$(find "$install_root" -name syncthing -type f 2>/dev/null | head -n 1 || true)"
     if [[ -z "$extracted" ]]; then
-        write_err 'Khong tim thay syncthing sau khi giai nen.'
+        write_err 'Could not find syncthing after extracting.'
         exit 1
     fi
     cp "$extracted" "$exe_path"
     chmod +x "$exe_path"
-    write_ok 'Da tai Syncthing portable.'
+    write_ok 'Syncthing portable downloaded.'
 }
 
 start_syncthing_process() {
     local exe
     exe="$(get_syncthing_exe)"
     if [[ -z "$exe" ]]; then
-        write_err 'Syncthing chua duoc cai.'
+        write_err 'Syncthing is not installed.'
         exit 1
     fi
 
     if pgrep -x syncthing >/dev/null 2>&1; then
-        write_ok 'Syncthing dang chay.'
+        write_ok 'Syncthing is already running.'
         return
     fi
 
     if command -v brew >/dev/null 2>&1 && brew services list 2>/dev/null | grep -q 'syncthing.*started'; then
-        write_ok 'Syncthing dang chay (brew services).'
+        write_ok 'Syncthing is already running (brew services).'
         return
     fi
 
-    write_info 'Khoi dong Syncthing...'
+    write_info 'Starting Syncthing...'
     if command -v brew >/dev/null 2>&1 && [[ "$exe" == "$(command -v syncthing 2>/dev/null || true)" ]]; then
         brew services start syncthing >/dev/null 2>&1 || true
     else
@@ -125,7 +125,7 @@ wait_syncthing_config() {
         fi
         sleep 2
     done
-    write_err 'Khong tim thay file cau hinh Syncthing.'
+    write_err 'Could not find the Syncthing config file.'
     exit 1
 }
 
@@ -208,7 +208,7 @@ ensure_syncthing_folder() {
 add_syncthing_remote_device() {
     local api_key="$1"
     local device_id="$2"
-    local name="${3:-May remote}"
+    local name="${3:-Remote device}"
 
     device_id="$(echo "$device_id" | xargs)"
     [[ -z "$device_id" ]] && return 0
@@ -251,7 +251,7 @@ register_syncthing_startup() {
 
     if command -v brew >/dev/null 2>&1 && [[ "$exe" == "$(command -v syncthing 2>/dev/null || true)" ]]; then
         brew services start syncthing >/dev/null 2>&1 || true
-        write_ok 'Da dang ky Syncthing chay nen (brew services).'
+        write_ok 'Registered Syncthing to start automatically (brew services).'
         return
     fi
 
@@ -284,7 +284,7 @@ register_syncthing_startup() {
 </plist>
 EOF
     launchctl load "$plist" 2>/dev/null || true
-    write_ok 'Da them Syncthing vao khoi dong macOS.'
+    write_ok 'Added Syncthing to macOS startup.'
 }
 
 new_sync_folder_shortcut() {
@@ -306,7 +306,7 @@ install_syncthing_mode() {
     for id in "${remote_ids[@]}"; do
         trimmed="$(echo "$id" | xargs)"
         if [[ -n "$trimmed" ]]; then
-            add_syncthing_remote_device "$api_key" "$trimmed" 'May remote'
+            add_syncthing_remote_device "$api_key" "$trimmed" 'Remote device'
             shared_devices+=("$trimmed")
         fi
     done

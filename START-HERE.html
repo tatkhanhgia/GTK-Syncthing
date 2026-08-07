@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Bat dau o day - Dong bo file</title>
+<title>Start here - File sync</title>
 <style>
   :root{--blue:#2563eb;--green:#16a34a;--bg:#f8fafc;--card:#fff;--ink:#0f172a;--muted:#64748b}
   *{box-sizing:border-box}
@@ -32,8 +32,8 @@
 <body>
 
 <header class="hero">
-  <h1>Dong bo file giua cac may</h1>
-  <p>Chi 3 buoc — khong can biet lap trinh</p>
+  <h1>Sync files between your machines</h1>
+  <p>Just 3 steps — no programming knowledge needed</p>
 </header>
 
 <div class="wrap">
@@ -44,52 +44,52 @@
 
   <div id="panel-win" class="panel active">
     <div class="step">
-      <h2><span class="num">1</span> Cai Tailscale</h2>
-      <p>Tai va dang nhap <b>cung mot tai khoan</b> tren moi may tinh.</p>
-      <a class="btn blue" href="https://tailscale.com/download/windows" target="_blank">Tai Tailscale</a>
+      <h2><span class="num">1</span> Install Tailscale</h2>
+      <p>Download and sign in with the <b>same account</b> on every machine.</p>
+      <a class="btn blue" href="https://tailscale.com/download/windows" target="_blank">Download Tailscale</a>
     </div>
     <div class="step">
-      <h2><span class="num">2</span> Mo ung dung dong bo</h2>
+      <h2><span class="num">2</span> Open the sync app</h2>
       <p>Double-click:</p>
       <p><span class="file">GKG-Sync.cmd</span></p>
-      <p>Chon <b>Cai dat / Them may moi</b> va lam theo huong dan.</p>
+      <p>Select <b>Install / Add machine</b> and follow the instructions.</p>
     </div>
     <div class="step">
-      <h2><span class="num">3</span> Gui Device ID cho may kia</h2>
-      <p>Sau khi cai xong, trang <b>KET-QUA-CAI-DAT.html</b> tu mo — bam <b>Copy Device ID</b>, gui cho nguoi dung may con lai.</p>
-      <p>May kia cung mo <span class="file">GKG-Sync.cmd</span> → <b>Cai dat</b> → dan Device ID vao.</p>
+      <h2><span class="num">3</span> Send your Device ID to the other machine</h2>
+      <p>After setup, the <b>KET-QUA-CAI-DAT.html</b> page opens — click <b>Copy Device ID</b> and send it to the other user(s).</p>
+      <p>The other machine then opens <span class="file">GKG-Sync.cmd</span> → <b>Install</b> → paste the Device ID.</p>
     </div>
   </div>
 
   <div id="panel-mac" class="panel">
     <div class="step">
-      <h2><span class="num">1</span> Cai Tailscale</h2>
-      <p>Tai va dang nhap <b>cung mot tai khoan</b> tren moi may tinh.</p>
-      <a class="btn blue" href="https://tailscale.com/download/macos" target="_blank">Tai Tailscale</a>
+      <h2><span class="num">1</span> Install Tailscale</h2>
+      <p>Download and sign in with the <b>same account</b> on every machine.</p>
+      <a class="btn blue" href="https://tailscale.com/download/macos" target="_blank">Download Tailscale</a>
     </div>
     <div class="step">
-      <h2><span class="num">2</span> Mo ung dung dong bo</h2>
+      <h2><span class="num">2</span> Open the sync app</h2>
       <p>Double-click:</p>
       <p><span class="file">GKG-Sync.command</span></p>
       <div class="note">
-        <b>Lan dau tren Mac:</b> neu macOS hoi quyen — chon <b>Open</b> (Mo).
+        <b>First time on Mac:</b> if macOS asks for permission — choose <b>Open</b>.
       </div>
-      <p>Chon <b>Cai dat / Them may moi</b> trong menu.</p>
+      <p>Select <b>Install / Add machine</b> in the menu.</p>
     </div>
     <div class="step">
-      <h2><span class="num">3</span> Gui Device ID cho may kia</h2>
-      <p>Sau khi cai xong, trang ket qua tu mo — Device ID da duoc copy san. Gui cho nguoi dung may Windows/Mac con lai.</p>
+      <h2><span class="num">3</span> Send your Device ID to the other machine</h2>
+      <p>After setup, the result page opens — your Device ID is already copied. Send it to the remaining Windows/Mac machine(s).</p>
     </div>
   </div>
 
   <div class="step" style="border-top:3px solid var(--green)">
-    <h2 style="color:var(--green)">Xong! Su dung hang ngay</h2>
-    <p>Tha file vao thu muc <b>Documents/Sync</b> — cac may tu dong dong bo.</p>
-    <p class="hidden" id="hint-win">Syncthing tat? Mo <span class="file">GKG-Sync.cmd</span> → <b>Khoi dong lai dong bo</b></p>
-    <p class="hidden" id="hint-mac">Syncthing tat? Mo <span class="file">GKG-Sync.command</span> → <b>Khoi dong lai dong bo</b></p>
+    <h2 style="color:var(--green)">Done! Use it every day</h2>
+    <p>Put files into the <b>Documents/Sync</b> folder — they will sync automatically.</p>
+    <p class="hidden" id="hint-win">Syncthing stopped? Open <span class="file">GKG-Sync.cmd</span> → <b>Restart sync</b></p>
+    <p class="hidden" id="hint-mac">Syncthing stopped? Open <span class="file">GKG-Sync.command</span> → <b>Restart sync</b></p>
   </div>
 
-  <footer>GKG-Syncthing — can ho tro? Mo <span class="file">HUONG-DAN.html</span></footer>
+  <footer>Need help? Open <span class="file">HUONG-DAN.html</span></footer>
 </div>
 
 <script>

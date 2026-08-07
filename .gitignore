@@ -2,10 +2,10 @@
 config.ps1
 config.ini
 
-# Ket qua cai dat (tu dong tao) - co the xoa
+# Install result (auto-generated) - safe to delete
 KET-QUA-CAI-DAT.html
 
-# Zip phan phoi
+# Distribution zip
 *.zip
 
 # Windows

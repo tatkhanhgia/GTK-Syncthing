@@ -1,5 +1,5 @@
-# LEGACY - uu tien dung config.ini (chung Windows + Mac)
-# Chi giu file nay neu may cu van dung config.ps1
+# LEGACY - prefer config.ini (shared Windows + Mac)
+# Keep this file only if an old machine still uses config.ps1
 # Device ID: http://127.0.0.1:8384 -> Action -> Show ID
 
 function ConvertTo-WslPath {
@@ -13,7 +13,7 @@ function ConvertTo-WslPath {
     return $normalized
 }
 
-# May dang chay script (co the de mac dinh, chinh sau neu can).
+# Machine running this script (defaults OK; edit later if needed).
 $LocalMachineIp   = 'CHANGE-ME'
 $LocalMachineName = $env:COMPUTERNAME
 
@@ -27,12 +27,12 @@ $PackConfig = @{
     InstallDir           = "$env:LOCALAPPDATA\GKG-Syncthing"
 }
 
-# Danh sach may dong bo. Them dong moi khi co may thu 3, 4, ...
+# List of sync peers. Add a row when you have a 3rd, 4th machine...
 $Peers = @(
-    @{ Name = 'May khac (vi du)'; TailscaleIp = 'CHANGE-ME'; SyncthingDeviceId = '' }
+    @{ Name = 'Other machine (example)'; TailscaleIp = 'CHANGE-ME'; SyncthingDeviceId = '' }
 )
 
-# Legacy SSH/Unison (legacy/) - chi dung peer dau tien lam remote.
+# Legacy SSH/Unison (legacy/) - uses first peer as remote only.
 $SyncConfig = @{
     RemoteHost    = $Peers[0].TailscaleIp
     RemoteUser    = 'admin'

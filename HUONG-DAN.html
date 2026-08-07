@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Hướng dẫn sử dụng - Đồng bộ file nhiều máy</title>
+<title>User guide - Multi-machine file sync</title>
 <style>
   :root{
     --bg:#f1f5f9;
@@ -170,19 +170,19 @@
 <body>
 
 <header class="hero">
-  <h1>Đồng bộ file nhiều máy</h1>
-  <p>Hướng dẫn đơn giản cho người mới bắt đầu &mdash; Windows và macOS &mdash; làm theo từng bước là xong</p>
+  <h1>Multi-machine file sync</h1>
+  <p>Simple guide for beginners &mdash; Windows and macOS &mdash; follow the steps and you are done</p>
 </header>
 
 <nav class="toc">
   <div class="wrap">
-    <a href="#phan1">1. Bộ cài để làm gì?</a>
-    <a href="#phan2">2. Khái niệm</a>
-    <a href="#phan3">3. Cài lần đầu</a>
-    <a href="#phan4">4. Thêm máy mới</a>
-    <a href="#phan5">5. Dùng hằng ngày</a>
-    <a href="#phan6">6. Nâng cao</a>
-    <a href="#phan7">7. Hỏi đáp</a>
+    <a href="#phan1">1. What is this?</a>
+    <a href="#phan2">2. Key concepts</a>
+    <a href="#phan3">3. First install</a>
+    <a href="#phan4">4. Add a machine</a>
+    <a href="#phan5">5. Daily use</a>
+    <a href="#phan6">6. Advanced</a>
+    <a href="#phan7">7. FAQ</a>
     <a href="#mac">Mac</a>
   </div>
 </nav>
@@ -190,127 +190,127 @@
 <div class="wrap">
 
 <section id="phan1">
-  <h2><span class="no">1</span> Bộ cài này dùng để làm gì?</h2>
+  <h2><span class="no">1</span> What does this installer do?</h2>
   <div class="card bordered">
-    <p>Giúp <b>2 hay nhiều máy tính</b> "xem chung" một thư mục. Bạn bỏ file vào thư mục trên máy này, máy kia sẽ <b>tự động</b> có file đó.</p>
+    <p>Lets <b>2 or more computers</b> share one folder. Put a file in the folder on one machine and the others <b>automatically</b> get it.</p>
     <ul>
-      <li>Không còn phải gửi file qua Zalo, Email hay USB.</li>
-      <li>File sửa ở máy nào, các máy còn lại tự động cập nhật theo.</li>
+      <li>No more sending files via chat apps, email, or USB.</li>
+      <li>Edit a file on any machine — the rest update automatically.</li>
     </ul>
-    <span class="path">Thư mục sync: <code>~/Documents/Sync</code> (Windows: <code>C:\Users\...\Documents\Sync</code>)</span>
+    <span class="path">Sync folder: <code>~/Documents/Sync</code> (Windows: <code>C:\Users\...\Documents\Sync</code>)</span>
   </div>
   <div class="card amber">
-    <h3>File cần nhớ</h3>
+    <h3>Files to remember</h3>
     <table>
-      <tr><th>Hệ điều hành</th><th>Cài / thêm máy</th><th>Hướng dẫn</th><th>Bật lại Syncthing</th></tr>
+      <tr><th>OS</th><th>Install / add machine</th><th>Guide</th><th>Restart Syncthing</th></tr>
       <tr><td><b>Windows</b></td><td><b>Cai-Dat-Sync.cmd</b></td><td><b>Huong-Dan.cmd</b></td><td><b>Khoi-Dong-Sync.cmd</b></td></tr>
       <tr><td><b>macOS</b></td><td><b>mac/cai-dat-sync.command</b></td><td><b>mac/huong-dan.command</b></td><td><b>mac/khoi-dong-sync.command</b></td></tr>
     </table>
-    <p style="margin-top:12px;color:var(--muted);font-size:14px">Mac lần đầu: mở Terminal, chạy <code>chmod +x mac/*.sh mac/*.command</code>. Các file <code>.ps1</code> / <code>.sh</code> khác là file hệ thống.</p>
+    <p style="margin-top:12px;color:var(--muted);font-size:14px">First time on Mac: open Terminal and run <code>chmod +x mac/*.sh mac/*.command</code>. Other <code>.ps1</code> / <code>.sh</code> files are system scripts.</p>
   </div>
 </section>
 
 <section id="phan2">
-  <h2><span class="no">2</span> Ba điều cần biết trước</h2>
+  <h2><span class="no">2</span> Three things to know first</h2>
   <div class="grid">
     <div class="card">
-      <h3>Máy cũ / Máy mới</h3>
-      <p><b>Máy cũ</b> = máy đã cài bộ sync từ trước (ví dụ máy LAPTOP).</p>
-      <p><b>Máy mới</b> = máy muốn thêm vào lần này (ví dụ máy thứ 3).</p>
+      <h3>Existing / New machine</h3>
+      <p><b>Existing machine</b> = already set up sync before (e.g. your laptop).</p>
+      <p><b>New machine</b> = the one you are adding now (e.g. a third PC).</p>
     </div>
     <div class="card">
       <h3>Device ID</h3>
-      <p>Giống "số căn cước" của máy tính &mdash; mỗi máy có một số riêng, không trùng nhau.</p>
-      <p>Muốn hai máy nói được với nhau: máy A phải biết số của máy B, <b>và ngược lại</b>. Thiếu một chiều là không chạy.</p>
+      <p>Like a unique ID for each computer &mdash; every machine has its own, never duplicated.</p>
+      <p>For two machines to talk: A must know B's ID, <b>and vice versa</b>. Missing either direction won't work.</p>
     </div>
     <div class="card">
       <h3>Tailscale</h3>
-      <p>Mạng ảo nối các máy lại với nhau. <b>Tất cả</b> các máy phải cài Tailscale và đăng nhập <b>cùng một tài khoản</b>.</p>
-      <p>Chưa có? Vào <code>tailscale.com</code> tải về rồi đăng nhập.</p>
+      <p>A virtual network connecting your machines. <b>All</b> machines must install Tailscale and sign in with the <b>same account</b>.</p>
+      <p>Don't have it? Go to <code>tailscale.com</code>, download, and sign in.</p>
     </div>
   </div>
   <div class="info">
-    <b>Xem số Device ID của máy mình:</b> mở trình duyệt gõ <code>http://127.0.0.1:8384</code> &rarr; tìm máy của mình &rarr; bấm <b>Show ID</b>.
+    <b>See your Device ID:</b> open a browser to <code>http://127.0.0.1:8384</code> &rarr; find your machine &rarr; click <b>Show ID</b>.
   </div>
 </section>
 
 <section id="phan3">
-  <h2><span class="no">3</span> Cài lần đầu (máy đầu tiên)</h2>
+  <h2><span class="no">3</span> First install (first machine)</h2>
   <div class="card">
     <ol class="steps">
-      <li>Kiểm tra có thư mục <code>Documents\Sync</code> trong profile Windows (script sẽ tạo nếu thiếu).</li>
-      <li>Chạy file: <b>Cai-Dat-Sync.cmd</b></li>
-      <li>Khi hỏi "Device ID" &rarr; nhấn <b>Enter</b> để bỏ qua (vì chưa có máy nào).</li>
-      <li>Xong. <b>Ghi lại số "DEVICE ID MAY NAY"</b> hiện ra cuối màn hình.</li>
+      <li>Make sure you have a <code>Documents\Sync</code> folder in your Windows profile (the script creates it if missing).</li>
+      <li>Run: <b>Cai-Dat-Sync.cmd</b></li>
+      <li>When asked for "Device ID" &rarr; press <b>Enter</b> to skip (no other machines yet).</li>
+      <li>Done. <b>Save the "YOUR DEVICE ID"</b> shown at the end.</li>
     </ol>
   </div>
 </section>
 
 <section id="phan4">
-  <h2><span class="no">4</span> Thêm một máy mới</h2>
+  <h2><span class="no">4</span> Add a new machine</h2>
   <div class="warn">
-    Quy tắc: máy <b>mới</b> "ra mắt" trước, máy <b>cũ</b> "nhận" máy mới sau. Làm <b>lần lượt theo thứ tự</b> dưới đây, không làm ngược.
+    Rule: the <b>new</b> machine goes first, then each <b>existing</b> machine accepts it. Follow the order below — do not reverse it.
   </div>
 
   <div class="card blue">
-    <h3><span class="badge moi">BUỚC A</span> Trên máy MỚI</h3>
+    <h3><span class="badge moi">STEP A</span> On the NEW machine</h3>
     <ol class="steps li-blue">
-      <li>Cài Tailscale và đăng nhập cùng tài khoản (xem Phần 2).</li>
-      <li>Copy toàn bộ thư mục bộ cài sang máy mới (USB, AirDrop, mạng nội bộ).</li>
-      <li>Chạy launcher cài đặt:
+      <li>Install Tailscale and sign in with the same account (see Section 2).</li>
+      <li>Copy the whole installer folder to the new machine (USB, AirDrop, LAN).</li>
+      <li>Run the install launcher:
         <ul>
           <li>Windows: <b>Cai-Dat-Sync.cmd</b></li>
-          <li>macOS: <b>mac/cai-dat-sync.command</b> (sau <code>chmod +x mac/*.command</code> nếu lần đầu)</li>
+          <li>macOS: <b>mac/cai-dat-sync.command</b> (after <code>chmod +x mac/*.command</code> if first time)</li>
         </ul>
       </li>
       <li>
-        Khi hỏi "Device ID":
+        When asked for "Device ID":
         <ul>
-          <li>Có số của máy cũ bên cạnh &rarr; dán từng số vào &rarr; Enter. (Làm vậy với <b>từng</b> máy cũ.)</li>
-          <li>Không có số nào &rarr; cứ Enter bỏ qua, nối sau cũng được.</li>
+          <li>If you have an existing machine's ID nearby &rarr; paste each one &rarr; Enter. (Do this for <b>each</b> existing machine.)</li>
+          <li>If you have none &rarr; press Enter to skip; you can connect later.</li>
         </ul>
       </li>
-      <li>Cuối màn hình hiện <b>"DEVICE ID MAY NAY"</b> &mdash; đây là số của máy mới.</li>
+      <li>At the end you'll see <b>"YOUR DEVICE ID"</b> &mdash; this is the new machine's ID.</li>
     </ol>
     <div class="deviceid">
-      <b><span class="badge batbuoc">BẮT BUỘC</span> Gửi số "DEVICE ID MAY NAY" này cho người lo máy CŨ.</b>
+      <b><span class="badge batbuoc">REQUIRED</span> Send this "YOUR DEVICE ID" to whoever manages the EXISTING machine(s).</b>
     </div>
-    <p>Kiểm tra Tailscale đang chạy (biểu tượng nhỏ ở góc phải màn hình).</p>
+    <p>Check that Tailscale is running (icon in the system tray / menu bar).</p>
   </div>
 
   <div class="card green">
-    <h3><span class="badge cu">BUỚC B</span> Trên máy CŨ (làm trên TỪNG máy cũ)</h3>
+    <h3><span class="badge cu">STEP B</span> On each EXISTING machine</h3>
     <ol class="steps li-green">
-      <li>Nhận "DEVICE ID" của máy mới (từ Buớc A).</li>
-      <li>Chạy launcher cài đặt trên máy cũ &rarr; Enter:
+      <li>Receive the new machine's Device ID (from Step A).</li>
+      <li>Run the install launcher on the existing machine &rarr; Enter:
         <ul>
           <li>Windows: <b>Cai-Dat-Sync.cmd</b></li>
           <li>macOS: <b>mac/cai-dat-sync.command</b></li>
         </ul>
       </li>
-      <li>Khi hỏi "Device ID": dán DEVICE ID của máy mới vào &rarr; Enter. (Các máy cũ khác đã biết rồi thì Enter bỏ qua.)</li>
-      <li>Xong. Chuyển sang máy cũ tiếp theo, làm lại từ đầu.</li>
+      <li>When asked for "Device ID": paste the new machine's Device ID &rarr; Enter. (Skip IDs you already added.)</li>
+      <li>Done. Repeat on the next existing machine.</li>
     </ol>
   </div>
 
   <div class="card violet">
-    <h3><span class="badge batbuoc">BUỚC C</span> Kết nối lần cuối (làm trên TỪNG máy)</h3>
+    <h3><span class="badge batbuoc">STEP C</span> Final connection (on each machine)</h3>
     <ol class="steps">
-      <li>Mở trình duyệt: <code>http://127.0.0.1:8384</code></li>
-      <li>Nếu có thông báo <b>"Add device"</b> hoặc thư mục cần xác nhận &rarr; bấm <b>Add / Accept</b>.</li>
-      <li>Kiểm tra thư mục <b>"Documents Sync"</b> hiện chữ <b>Synced</b>.</li>
+      <li>Open a browser: <code>http://127.0.0.1:8384</code></li>
+      <li>If you see <b>"Add device"</b> or a folder to confirm &rarr; click <b>Add / Accept</b>.</li>
+      <li>Check that folder <b>"Documents Sync"</b> shows <b>Synced</b>.</li>
     </ol>
     <div class="ok">
-      <b>Thử nghiệm:</b> bỏ 1 file vào thư mục Sync trên máy này &mdash; máy kia phải tự động có file đó trong vài giây.
+      <b>Test:</b> drop one file into the Sync folder on this machine &mdash; the other should get it within a few seconds.
     </div>
   </div>
 </section>
 
 <section id="phan5">
-  <h2><span class="no">5</span> Sử dụng hằng ngày</h2>
+  <h2><span class="no">5</span> Daily use</h2>
   <div class="card bordered">
-    <p>Chỉ cần <b>bỏ file vào</b> thư mục <code>Documents/Sync</code> &mdash; mọi thứ tự động chạy, không cần làm gì thêm.</p>
-    <p>Syncthing bị tắt?
+    <p>Just <b>put files into</b> <code>Documents/Sync</code> &mdash; everything else is automatic.</p>
+    <p>Syncthing stopped?
       Windows: <b>Khoi-Dong-Sync.cmd</b>.
       Mac: <b>mac/khoi-dong-sync.command</b>.
     </p>
@@ -318,28 +318,28 @@
 </section>
 
 <section id="phan6">
-  <h2><span class="no">6</span> Nâng cao: đăng ký máy trong file cấu hình</h2>
+  <h2><span class="no">6</span> Advanced: register machines in config</h2>
   <div class="card">
-    <p>Không bắt buộc. Chỉ làm khi muốn danh sách máy được lưu sẵn, khỏi phải dán Device ID mỗi lần.</p>
+    <p>Optional. Use this if you want a saved list of machines so you don't paste Device IDs every time.</p>
     <details>
-      <summary>Mở hướng dẫn chi tiết</summary>
+      <summary>Open detailed instructions</summary>
       <div class="body">
         <ol class="steps">
-          <li>Mở file <code>config.ini</code> (cùng thư mục với bộ cài) bằng Notepad (Windows) hoặc TextEdit (Mac).</li>
-          <li>Thêm block peer mới, ví dụ:
+          <li>Open <code>config.ini</code> (same folder as the installer) in Notepad (Windows) or TextEdit (Mac).</li>
+          <li>Add a new peer block, for example:
             <pre style="background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;font-size:13px">[peer.3]
 name=MacBook
 tailscale_ip=100.x.x.x
-device_id=DEVICE-ID-O-DAY</pre>
+device_id=DEVICE-ID-HERE</pre>
           </li>
-          <li>Lưu file, chạy lại launcher cài đặt &rarr; Enter (bỏ qua khi hỏi Device ID nếu đã điền trong file).</li>
-          <li>Làm lại trên <b>từng</b> máy còn lại.</li>
+          <li>Save the file, run the install launcher again &rarr; Enter (skip Device ID prompts if already filled in the file).</li>
+          <li>Repeat on <b>each</b> remaining machine.</li>
         </ol>
         <table>
-          <tr><th>Thông tin</th><th>Lấy ở đâu</th><th>Ghi chú</th></tr>
-          <tr><td>Tên máy</td><td>Tự đặt</td><td>Ví dụ "Máy Thứ 3"</td></tr>
-          <tr><td>Tailscale IP</td><td><code>login.tailscale.com/admin/machines</code></td><td>Không biết thì để <code>CHANGE-ME</code>, không hư gì</td></tr>
-          <tr><td>Device ID</td><td><code>http://127.0.0.1:8384</code> &rarr; Show ID</td><td>Bắt buộc</td></tr>
+          <tr><th>Field</th><th>Where to get it</th><th>Notes</th></tr>
+          <tr><td>Machine name</td><td>Choose any label</td><td>e.g. "Third PC"</td></tr>
+          <tr><td>Tailscale IP</td><td><code>login.tailscale.com/admin/machines</code></td><td>Unknown? Use <code>CHANGE-ME</code> — harmless</td></tr>
+          <tr><td>Device ID</td><td><code>http://127.0.0.1:8384</code> &rarr; Show ID</td><td>Required</td></tr>
         </table>
       </div>
     </details>
@@ -347,47 +347,47 @@ device_id=DEVICE-ID-O-DAY</pre>
 </section>
 
 <section id="mac">
-  <h2><span class="no">&#63743;</span> macOS — lưu ý thêm</h2>
+  <h2><span class="no">&#63743;</span> macOS — extra notes</h2>
   <div class="card green">
     <ol class="steps li-green">
-      <li>Cài <b>Tailscale</b> từ Mac App Store hoặc <code>tailscale.com</code>, đăng nhập cùng tài khoản với Windows.</li>
-      <li>Cài <b>Homebrew</b> (khuyến nghị) để script tự cài Syncthing: <code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></li>
-      <li>Lần đầu: <code>chmod +x mac/*.sh mac/*.command</code> trong thư mục bộ cài.</li>
-      <li>Double-click <b>mac/cai-dat-sync.command</b> — flow giống Windows (nhập Device ID máy cũ, copy Device ID Mac gửi lại).</li>
-      <li>macOS có thể hỏi quyền mạng / mở Terminal lần đầu — chọn <b>Allow</b>.</li>
+      <li>Install <b>Tailscale</b> from the Mac App Store or <code>tailscale.com</code>, same account as Windows.</li>
+      <li>Install <b>Homebrew</b> (recommended) so the script can install Syncthing: <code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></li>
+      <li>First time: <code>chmod +x mac/*.sh mac/*.command</code> in the installer folder.</li>
+      <li>Double-click <b>mac/cai-dat-sync.command</b> — same flow as Windows (enter existing Device IDs, copy Mac Device ID to send back).</li>
+      <li>macOS may ask for network / Terminal permission the first time — choose <b>Allow</b>.</li>
     </ol>
   </div>
 </section>
 
 <section id="phan7">
-  <h2><span class="no">7</span> Câu hỏi thường gặp</h2>
+  <h2><span class="no">7</span> Frequently asked questions</h2>
   <details>
-    <summary>Máy không thấy nhau / không đồng bộ</summary>
+    <summary>Machines don't see each other / won't sync</summary>
     <div class="body">
-      Mở <code>http://127.0.0.1:8384</code> trên cả 2 máy:
+      Open <code>http://127.0.0.1:8384</code> on both machines:
       <ul>
-        <li>Máy kia có màu <b>XANH</b> (online) không?</li>
-        <li>Tailscale có đang chạy trên cả 2 máy không?</li>
-        <li>Đã thêm Device ID đủ 2 chiều chưa? (Phần 2)</li>
+        <li>Is the other machine <b>GREEN</b> (online)?</li>
+        <li>Is Tailscale running on both?</li>
+        <li>Did you add Device IDs both ways? (Section 2)</li>
       </ul>
     </div>
   </details>
   <details>
-    <summary>Windows hỏi cho phép mạng cho Syncthing</summary>
-    <div class="body">Bấm <b>"Cho phép / Allow access"</b>. Đây là bước bắt buộc.</div>
+    <summary>Windows asks to allow network access for Syncthing</summary>
+    <div class="body">Click <b>"Allow access"</b>. This step is required.</div>
   </details>
   <details>
-    <summary>Lỗi "cannot find path"</summary>
-    <div class="body">Giải nén lại bộ cài mới. Trong thư mục giải nén phải thấy <b>Cai-Dat-Sync.cmd</b> và <b>README.txt</b> cùng hàng.</div>
+    <summary>Error "cannot find path"</summary>
+    <div class="body">Extract a fresh copy of the installer. You should see <b>Cai-Dat-Sync.cmd</b> and <b>README.txt</b> in the same folder.</div>
   </details>
   <details>
-    <summary>Thư mục Sync đổi chỗ trên máy mới</summary>
-    <div class="body">Mở <code>config.ini</code> (xem Phần 6), sửa <code>sync_folder=</code> trong section <code>[local]</code>. Để trống = mặc định <code>~/Documents/Sync</code>.</div>
+    <summary>Sync folder in a different location on a new machine</summary>
+    <div class="body">Open <code>config.ini</code> (Section 6), edit <code>sync_folder=</code> under <code>[local]</code>. Leave blank = default <code>~/Documents/Sync</code>.</div>
   </details>
 </section>
 
 <footer>
-  GKG-Syncthing &mdash; hướng dẫn này có thể in ra để phát cho người dùng mới.
+  GKG-Syncthing &mdash; you can print this guide for new users.
 </footer>
 
 </div>

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Doc config.ini chung (macOS + Windows)
+# Shared config.ini loader (macOS + Windows)
 
 set -euo pipefail
 
@@ -58,11 +58,11 @@ load_gkg_config() {
 
     if [[ ! -f "$ini_path" ]]; then
         if [[ ! -f "$example_path" ]]; then
-            echo "[LOI] Khong tim thay config.ini hoac config.example.ini" >&2
+            echo "[ERROR] Could not find config.ini or config.example.ini" >&2
             return 1
         fi
         cp "$example_path" "$ini_path"
-        echo "Da tao config.ini tu config.example.ini"
+        echo "Created config.ini from config.example.ini"
         echo ""
     fi
 
@@ -113,14 +113,165 @@ load_gkg_config() {
     done < <(ini_list_peer_sections "$ini_path")
 }
 
+is_valid_syncthing_device_id() {
+    local id="$1"
+    [[ "$id" =~ ^[A-Z0-9]{7}(-[A-Z0-9]{7}){6}$ ]]
+}
+
+get_local_tailscale_ip() {
+    if ! command -v tailscale >/dev/null 2>&1; then
+        return 1
+    fi
+    local ip
+    ip="$(tailscale ip -4 2>/dev/null | head -n 1 | xargs || true)"
+    [[ -n "$ip" ]] || return 1
+    echo "$ip"
+}
+
+ini_set_in_section() {
+    local section="$1"
+    local key="$2"
+    local value="$3"
+    local file="$4"
+    local tmp found_section found_key
+    tmp="$(mktemp)"
+    found_section=0
+    found_key=0
+
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        if [[ "$line" =~ ^[[:space:]]*\[([^]]+)\][[:space:]]*$ ]]; then
+            if [[ $found_section -eq 1 && $found_key -eq 0 ]]; then
+                echo "${key}=${value}"
+                found_key=1
+            fi
+            if [[ "${BASH_REMATCH[1]}" == "$section" ]]; then
+                found_section=1
+            else
+                found_section=0
+            fi
+            echo "$line"
+            continue
+        fi
+
+        if [[ $found_section -eq 1 && "$line" =~ ^[[:space:]]*${key}[[:space:]]*= ]]; then
+            echo "${key}=${value}"
+            found_key=1
+            continue
+        fi
+
+        echo "$line"
+    done < "$file" > "$tmp"
+
+    if [[ $found_section -eq 1 && $found_key -eq 0 ]]; then
+        echo "${key}=${value}" >> "$tmp"
+        found_key=1
+    fi
+
+    if [[ $found_section -eq 0 ]]; then
+        {
+            cat "$tmp"
+            echo ""
+            echo "[$section]"
+            echo "${key}=${value}"
+        } > "$file"
+    else
+        cp "$tmp" "$file"
+    fi
+    rm -f "$tmp"
+}
+
+ini_peer_device_exists() {
+    local device_id="$1"
+    local file="$2"
+    local section
+    while IFS= read -r section; do
+        [[ -z "$section" ]] && continue
+        if [[ "$(ini_get "$section" device_id "$file" | xargs)" == "$device_id" ]]; then
+            return 0
+        fi
+    done < <(ini_list_peer_sections "$file")
+    return 1
+}
+
+clear_duplicate_local_device_id() {
+    local ini_path="$CONFIG_INI"
+    local local_id
+    [[ -f "$ini_path" ]] || return 0
+    local_id="$(ini_get local device_id "$ini_path" | xargs)"
+    [[ -z "$local_id" ]] || return 0
+    ini_peer_device_exists "$local_id" "$ini_path" || return 0
+    ini_set_in_section local device_id "" "$ini_path"
+}
+
+ini_next_peer_index() {
+    local file="$1"
+    local max=0 n
+    while IFS= read -r section; do
+        [[ "$section" =~ ^peer\.([0-9]+)$ ]] || continue
+        n="${BASH_REMATCH[1]}"
+        if (( n > max )); then max=$n; fi
+    done < <(ini_list_peer_sections "$file")
+    echo $((max + 1))
+}
+
+save_gkg_config_after_install() {
+    local device_id="$1"
+    shift
+    local -a added_peer_ids=("$@")
+    local ini_path="$CONFIG_INI"
+    local ts_ip name id next_idx
+
+    [[ -f "$ini_path" ]] || return 0
+
+    name="${LOCAL_MACHINE_NAME:-$(hostname -s 2>/dev/null || hostname)}"
+    ini_set_in_section local machine_name "$name" "$ini_path"
+
+    ts_ip="$(get_local_tailscale_ip 2>/dev/null || true)"
+    if [[ -n "$ts_ip" ]]; then
+        ini_set_in_section local tailscale_ip "$ts_ip" "$ini_path"
+    fi
+
+    ini_set_in_section local device_id "$device_id" "$ini_path"
+
+    for id in "${added_peer_ids[@]}"; do
+        id="$(echo "$id" | xargs)"
+        [[ -z "$id" || "$id" == "$device_id" ]] && continue
+        is_valid_syncthing_device_id "$id" || continue
+        ini_peer_device_exists "$id" "$ini_path" && continue
+        next_idx="$(ini_next_peer_index "$ini_path")"
+        {
+            echo ""
+            echo "[peer.${next_idx}]"
+            echo "name=Remote device ${next_idx}"
+            echo "tailscale_ip=CHANGE-ME"
+            echo "device_id=${id}"
+        } >> "$ini_path"
+    done
+}
+
+maybe_refresh_local_tailscale_ip() {
+    local ini_path="$CONFIG_INI"
+    local current ts_ip
+    [[ -f "$ini_path" ]] || return 0
+    current="$(ini_get local tailscale_ip "$ini_path" | xargs)"
+    if [[ -n "$current" && "$current" != "CHANGE-ME" ]]; then
+        return 0
+    fi
+    ts_ip="$(get_local_tailscale_ip 2>/dev/null || true)"
+    [[ -n "$ts_ip" ]] || return 0
+    ini_set_in_section local tailscale_ip "$ts_ip" "$ini_path"
+}
+
 get_peer_device_ids() {
     local ids=()
-    local id
+    local id self_id
+    self_id="$(ini_get local device_id "${CONFIG_INI:-}" 2>/dev/null | xargs || true)"
     for id in "${PEER_DEVICE_IDS[@]:-}"; do
         id="$(echo "$id" | xargs)"
-        if [[ -n "$id" ]]; then
-            ids+=("$id")
-        fi
+        [[ -z "$id" ]] && continue
+        is_valid_syncthing_device_id "$id" || continue
+        [[ -n "$self_id" && "$id" == "$self_id" ]] && continue
+        ids+=("$id")
     done
     if [[ ${#ids[@]} -eq 0 ]]; then
         return 0

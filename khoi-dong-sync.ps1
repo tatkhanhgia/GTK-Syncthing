@@ -1,4 +1,4 @@
-# Khoi dong Syncthing va mo thu muc sync (khong cai lai)
+# Start Syncthing and open the Sync folder (no reinstall)
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
@@ -7,7 +7,7 @@ try {
     Import-GkgConfig -ScriptDir $ScriptDir
 } catch {
     Write-Host ''
-    Write-Host '[LOI] Chua co config.ini. Chay Cai-Dat-Sync.cmd truoc.' -ForegroundColor Red
+    Write-Host '[ERROR] No config.ini found. Run Cai-Dat-Sync.cmd first.' -ForegroundColor Red
     Write-Host ''
     exit 1
 }
@@ -15,28 +15,28 @@ try {
 
 if (-not (Test-SyncthingInstalled -Config $PackConfig)) {
     Write-Host ''
-    Write-Host '[LOI] Syncthing chua duoc cai.' -ForegroundColor Red
-    Write-Host 'Chay Cai-Dat-Sync.cmd truoc.' -ForegroundColor Yellow
+    Write-Host '[ERROR] Syncthing is not installed.' -ForegroundColor Red
+    Write-Host 'Run Cai-Dat-Sync.cmd first.' -ForegroundColor Yellow
     Write-Host ''
     exit 1
 }
 
 Write-Host ''
-Write-Host 'Dang khoi dong Syncthing...' -ForegroundColor Cyan
+Write-Host 'Starting Syncthing...' -ForegroundColor Cyan
 Start-SyncthingProcess -Config $PackConfig
 Start-Sleep -Seconds 2
 
-Write-Host 'Mo thu muc sync...' -ForegroundColor Green
+Write-Host 'Opening Sync folder...' -ForegroundColor Green
 Start-Process $PackConfig.SyncFolder
 
 $url = Get-SyncthingGuiUrl
-Write-Host "Trang quan ly: $url" -ForegroundColor Green
+Write-Host "Syncthing management page: $url" -ForegroundColor Green
 try {
     Start-Process $url | Out-Null
 } catch {
-    Write-Host 'Mo trinh duyet thu cong neu can.' -ForegroundColor Yellow
+    Write-Host 'Open your browser manually if needed.' -ForegroundColor Yellow
 }
 
 Write-Host ''
-Write-Host 'Xong. File trong thu muc Sync se tu dong dong bo.' -ForegroundColor Green
+Write-Host 'Done. Files in the Sync folder will sync automatically.' -ForegroundColor Green
 Write-Host ''

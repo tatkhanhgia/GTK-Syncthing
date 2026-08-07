@@ -53,14 +53,14 @@ function Get-SyncthingExe {
 function Install-SyncthingPackage {
     param($Config)
 
-    Write-Info 'Dang cai Syncthing...'
+    Write-Info 'Installing Syncthing...'
 
     if (Get-Command winget -ErrorAction SilentlyContinue) {
-        Write-Host 'Thu cai bang winget...'
+        Write-Host 'Trying winget install...'
         cmd /c "winget install --id Syncthing.Syncthing -e --accept-source-agreements --accept-package-agreements --silent" | Out-Null
         Start-Sleep -Seconds 3
         if (Get-Command syncthing -ErrorAction SilentlyContinue) {
-            Write-Ok 'Da cai Syncthing bang winget.'
+            Write-Ok 'Syncthing installed via winget.'
             return
         }
     }
@@ -68,11 +68,11 @@ function Install-SyncthingPackage {
     $installRoot = Join-Path $Config.InstallDir 'syncthing'
     $exePath = Join-Path $installRoot 'syncthing.exe'
     if (Test-Path $exePath) {
-        Write-Ok 'Syncthing portable da co san.'
+        Write-Ok 'Syncthing portable is already present.'
         return
     }
 
-    Write-Host 'Tai Syncthing portable...'
+    Write-Host 'Downloading Syncthing portable...'
     New-Item -ItemType Directory -Force -Path $installRoot | Out-Null
     $zipPath = Join-Path $env:TEMP 'syncthing-windows.zip'
     $url = 'https://github.com/syncthing/syncthing/releases/download/v1.29.3/syncthing-windows-amd64-v1.29.3.zip'
@@ -82,11 +82,11 @@ function Install-SyncthingPackage {
 
     $extracted = Get-ChildItem -Path $installRoot -Recurse -Filter 'syncthing.exe' | Select-Object -First 1
     if (-not $extracted) {
-        throw 'Khong tim thay syncthing.exe sau khi giai nen.'
+        throw 'Could not find syncthing.exe after extracting.'
     }
 
     Copy-Item $extracted.FullName $exePath -Force
-    Write-Ok 'Da tai Syncthing portable.'
+    Write-Ok 'Syncthing portable downloaded.'
 }
 
 function Start-SyncthingProcess {
@@ -94,16 +94,16 @@ function Start-SyncthingProcess {
 
     $exe = Get-SyncthingExe -Config $Config
     if (-not $exe) {
-        throw 'Syncthing chua duoc cai.'
+        throw 'Syncthing is not installed.'
     }
 
     $running = Get-Process syncthing -ErrorAction SilentlyContinue
     if ($running) {
-        Write-Ok 'Syncthing dang chay.'
+        Write-Ok 'Syncthing is already running.'
         return
     }
 
-    Write-Info 'Khoi dong Syncthing...'
+    Write-Info 'Starting Syncthing...'
     Start-Process -FilePath $exe -WindowStyle Hidden
     Start-Sleep -Seconds 4
 }
@@ -119,7 +119,7 @@ function Wait-SyncthingConfig {
         }
         Start-Sleep -Seconds 2
     }
-    throw 'Khong tim thay file cau hinh Syncthing.'
+    throw 'Could not find Syncthing config file.'
 }
 
 function Get-SyncthingApiKey {
@@ -191,7 +191,7 @@ function Add-SyncthingRemoteDevice {
     param(
         [string]$ApiKey,
         [string]$DeviceId,
-        [string]$Name = 'May remote'
+        [string]$Name = 'Remote device'
     )
 
     if (-not $DeviceId) {
@@ -242,7 +242,7 @@ function Register-SyncthingStartup {
     $shortcut.WindowStyle = 7
     $shortcut.Description = 'GKG folder sync'
     $shortcut.Save()
-    Write-Ok 'Da them Syncthing vao khoi dong Windows.'
+    Write-Ok 'Added Syncthing to Windows startup.'
 }
 
 function New-SyncFolderShortcut {
@@ -253,7 +253,7 @@ function New-SyncFolderShortcut {
     $wsh = New-Object -ComObject WScript.Shell
     $shortcut = $wsh.CreateShortcut($shortcutPath)
     $shortcut.TargetPath = $Config.SyncFolder
-    $shortcut.Description = 'Thu muc dong bo 2 chieu'
+    $shortcut.Description = 'Two-way sync folder'
     $shortcut.Save()
 }
 
