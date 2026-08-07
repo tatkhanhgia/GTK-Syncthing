@@ -32,6 +32,17 @@ function Start-InstallConsole {
     ) | Out-Null
 }
 
+function Start-JoinConsole {
+    $installScript = Join-Path $ScriptDir 'install.ps1'
+    Start-Process -FilePath 'powershell.exe' -ArgumentList @(
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-NoExit',
+        '-File', "`"$installScript`"",
+        '-Mode', 'Join'
+    ) | Out-Null
+}
+
 function Start-RestartConsole {
     $restartScript = Join-Path $ScriptDir 'khoi-dong-sync.ps1'
     Start-Process -FilePath 'powershell.exe' -ArgumentList @(
@@ -78,7 +89,7 @@ function Show-MainMenu {
 
     $form = New-Object System.Windows.Forms.Form
     $form.Text = 'GKG Sync - File sync'
-    $form.Size = New-Object System.Drawing.Size(440, 420)
+    $form.Size = New-Object System.Drawing.Size(440, 500)
     $form.StartPosition = 'CenterScreen'
     $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
     $form.MaximizeBox = $false
@@ -146,13 +157,17 @@ function Show-MainMenu {
         Open-ManagePage
     })
 
+    [void](New-MenuButton -Text '6. Join network' -Top 342 -BackColor $blue -OnClick {
+        Start-JoinConsole
+    })
+
     $hint = New-Object System.Windows.Forms.Label
     $hint.Text = 'First time? Click item 1 and follow the instructions in the new window.'
     $hint.Font = New-Object System.Drawing.Font('Segoe UI', 9)
     $hint.ForeColor = [System.Drawing.Color]::FromArgb(100, 116, 139)
     $hint.AutoSize = $false
     $hint.Size = New-Object System.Drawing.Size(380, 36)
-    $hint.Location = New-Object System.Drawing.Point(26, 346)
+    $hint.Location = New-Object System.Drawing.Point(26, 402)
     $form.Controls.Add($hint)
 
     [void]$form.ShowDialog()

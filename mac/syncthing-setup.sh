@@ -209,6 +209,7 @@ add_syncthing_remote_device() {
     local api_key="$1"
     local device_id="$2"
     local name="${3:-Remote device}"
+    local introducer="${4:-false}"
 
     device_id="$(echo "$device_id" | xargs)"
     [[ -z "$device_id" ]] && return 0
@@ -217,6 +218,27 @@ add_syncthing_remote_device() {
     devices="$(invoke_syncthing_api "$api_key" GET '/rest/config/devices')"
     existing="$(echo "$devices" | grep -o "$device_id" || true)"
     if [[ -n "$existing" ]]; then
+        if [[ "$introducer" == "true" ]]; then
+            local current body
+            body="$(echo "$devices" | python3 - "$device_id" <<'PY'
+import sys, json
+try:
+    devs = json.load(sys.stdin)
+except Exception:
+    sys.exit(0)
+target = sys.argv[1]
+for d in devs:
+    if d.get('deviceID') == target:
+        d['introducer'] = True
+        print(json.dumps(d))
+        sys.exit(0)
+sys.exit(1)
+PY
+)"
+            if [[ -n "$body" ]]; then
+                invoke_syncthing_api "$api_key" PUT "/rest/config/devices/$device_id" "$body" >/dev/null 2>/dev/null || true
+            fi
+        fi
         return 0
     fi
 
@@ -227,7 +249,7 @@ add_syncthing_remote_device() {
   "name": "$name",
   "addresses": ["dynamic"],
   "compression": "metadata",
-  "introducer": false,
+  "introducer": $introducer,
   "skipIntroductionRemovals": false,
   "paused": false
 }
@@ -242,6 +264,76 @@ get_local_syncthing_device_id() {
     status="$(invoke_syncthing_api "$api_key" GET '/rest/system/status')"
     my_id="$(echo "$status" | sed -n 's/.*"myID"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
     echo "$my_id"
+}
+
+# Sync folder membership: merge known devices into the folder's devices[]
+# (add-only, keep every other field unchanged). Runs on the hub ONLY.
+sync_folder_membership() {
+    local api_key="$1"
+    local folder_id="$2"
+    local self_id="$3"
+
+    if ! command -v python3 >/dev/null 2>&1; then
+        write_warn 'python3 not found; skipping membership sync.'
+        return 0
+    fi
+    [[ -z "$folder_id" ]] && return 0
+
+    local folder devices merged added
+    folder="$(invoke_syncthing_api "$api_key" GET "/rest/config/folders/${folder_id}" 2>/dev/null || true)"
+    devices="$(invoke_syncthing_api "$api_key" GET '/rest/config/devices' 2>/dev/null || true)"
+    [[ -z "$folder" || -z "$devices" ]] && return 0
+
+    merged="$(python3 - "$folder" "$devices" "$self_id" <<'PY'
+import sys, json
+folder = json.loads(sys.argv[1])
+self_id = sys.argv[3] or ''
+try:
+    known = json.loads(sys.argv[2])
+except Exception:
+    known = []
+present = [d.get('deviceID') for d in folder.get('devices', []) if d.get('deviceID')]
+added = []
+for d in known:
+    did = d.get('deviceID', '')
+    if not did or did == self_id or did in present:
+        continue
+    folder.setdefault('devices', []).append({'deviceID': did})
+    present.append(did)
+    added.append(did)
+print(json.dumps({'added': added, 'folder': folder}))
+PY
+)"
+    local count
+    count="$(echo "$merged" | python3 -c 'import sys,json;print(len(json.load(sys.stdin)["added"]))' 2>/dev/null || echo 0)"
+    if [[ "$count" -eq 0 ]] 2>/dev/null; then
+        return 0
+    fi
+
+    local newfolder
+    newfolder="$(echo "$merged" | python3 -c 'import sys,json;print(json.dumps(json.load(sys.stdin)["folder"]))' 2>/dev/null || true)"
+    [[ -z "$newfolder" ]] && return 0
+
+    local attempt=0 code
+    while (( attempt < 3 )); do
+        attempt=$((attempt + 1))
+        code="$(curl -sS -o /dev/null -w '%{http_code}' -X PUT \
+            -H "X-API-Key: $api_key" -H 'Content-Type: application/json' \
+            -d "$newfolder" \
+            "http://127.0.0.1:${SYNCTHING_PORT}/rest/config/folders/${folder_id}")"
+        if [[ "$code" == "200" || "$code" == "204" ]]; then
+            write_ok "Folder '$folder_id': added $count device(s) (membership sync)."
+            return 0
+        fi
+        if [[ "$code" == "409" || "$code" == "500" ]]; then
+            sleep 2
+            continue
+        fi
+        write_warn "Membership sync failed (HTTP $code)."
+        return 1
+    done
+    write_warn 'Folder membership sync failed after retries.'
+    return 1
 }
 
 register_syncthing_startup() {
@@ -303,12 +395,19 @@ install_syncthing_mode() {
     config_path="$(wait_syncthing_config)"
     api_key="$(get_syncthing_api_key "$config_path")"
 
+    # Hub (introducer) first — from config [network].
+    if [[ -n "${NET_INTRODUCER_ID:-}" ]]; then
+        trimmed="$(echo "$NET_INTRODUCER_ID" | xargs)"
+        add_syncthing_remote_device "$api_key" "$trimmed" 'Hub (introducer)' true
+        shared_devices+=("$trimmed")
+    fi
+
     for id in "${remote_ids[@]}"; do
         trimmed="$(echo "$id" | xargs)"
-        if [[ -n "$trimmed" ]]; then
-            add_syncthing_remote_device "$api_key" "$trimmed" 'Remote device'
-            shared_devices+=("$trimmed")
-        fi
+        [[ -z "$trimmed" ]] && continue
+        [[ -n "${NET_INTRODUCER_ID:-}" && "$trimmed" == "$(echo "$NET_INTRODUCER_ID" | xargs)" ]] && continue
+        add_syncthing_remote_device "$api_key" "$trimmed" 'Remote device'
+        shared_devices+=("$trimmed")
     done
 
     ensure_syncthing_folder "$api_key" "${shared_devices[@]}"

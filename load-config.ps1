@@ -296,6 +296,29 @@ function Import-GkgConfig {
         [void][int]::TryParse($syncthing['port'], [ref]$port)
     }
 
+    $network = $ini['network']
+    if (-not $network) { $network = @{} }
+
+    $isHub = ($network['is_hub'] -and $network['is_hub'].Trim() -eq 'true')
+    $introducerDeviceId = ''
+    if ($network['introducer_device_id']) {
+        $introducerDeviceId = $network['introducer_device_id'].Trim()
+    }
+    $autoShare = ($network['auto_share'] -and $network['auto_share'].Trim() -ne 'false')
+
+    $localDeviceId = ''
+    if ($local['device_id']) { $localDeviceId = $local['device_id'].Trim() }
+
+    if ($isHub -and $introducerDeviceId) {
+        Write-Host "[network] is_hub=true ma lai co introducer_device_id — bo qua (hub khong can)." -ForegroundColor Yellow
+        $introducerDeviceId = ''
+    }
+
+    if ($introducerDeviceId -and $localDeviceId -and $introducerDeviceId -eq $localDeviceId) {
+        Write-Host "[network] introducer_device_id trung voi Device ID may nay — bo qua." -ForegroundColor Yellow
+        $introducerDeviceId = ''
+    }
+
     $script:PackConfig = @{
         SyncFolder           = $syncFolder
         LocalMachineIp       = $tailscaleIp
@@ -304,6 +327,9 @@ function Import-GkgConfig {
         SyncthingFolderLabel = if ($syncthing['folder_label']) { $syncthing['folder_label'] } else { 'Documents Sync' }
         SyncthingPort        = $port
         InstallDir           = "$env:LOCALAPPDATA\GKG-Syncthing"
+        IsHub                = $isHub
+        IntroducerDeviceId   = $introducerDeviceId
+        AutoShare            = $autoShare
     }
 
     $script:Peers = @()

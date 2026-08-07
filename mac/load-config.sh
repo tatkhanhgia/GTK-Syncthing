@@ -99,6 +99,30 @@ load_gkg_config() {
         SYNCTHING_PORT="8384"
     fi
 
+    NET_IS_HUB="$(ini_get network is_hub "$ini_path" | xargs)"
+    if [[ "$NET_IS_HUB" != "true" ]]; then
+        NET_IS_HUB="false"
+    fi
+
+    NET_INTRODUCER_ID="$(ini_get network introducer_device_id "$ini_path" | xargs)"
+    if [[ "$NET_IS_HUB" == "true" && -n "$NET_INTRODUCER_ID" ]]; then
+        echo "[network] is_hub=true & co introducer_device_id — bo qua (hub khong can)." >&2
+        NET_INTRODUCER_ID=""
+    fi
+
+    LOCAL_DEVICE_ID="$(ini_get local device_id "$ini_path" | xargs)"
+    if [[ -n "$NET_INTRODUCER_ID" && -n "$LOCAL_DEVICE_ID" && "$NET_INTRODUCER_ID" == "$LOCAL_DEVICE_ID" ]]; then
+        echo "[network] introducer_device_id trung voi Device ID may nay — bo qua." >&2
+        NET_INTRODUCER_ID=""
+    fi
+
+    NET_AUTO_SHARE="$(ini_get network auto_share "$ini_path" | xargs)"
+    if [[ -z "$NET_AUTO_SHARE" || "$NET_AUTO_SHARE" == "false" ]]; then
+        NET_AUTO_SHARE="false"
+    else
+        NET_AUTO_SHARE="true"
+    fi
+
     INSTALL_DIR="$HOME/Library/Application Support/GKG-Syncthing"
 
     PEER_NAMES=()

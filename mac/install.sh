@@ -53,9 +53,14 @@ main() {
     show_banner
     ensure_tailscale
 
-    local -a remote_ids=()
-    local -a wizard_ids=()
-    local id config_count=0
+    local join_mode="false" join_hub_id=""
+    local -a remote_ids=() wizard_ids=()
+    local id line prefix value config_count=0
+
+    if [[ "${1:-}" == "join" ]]; then
+        join_mode="true"
+        join_hub_id="${NET_INTRODUCER_ID:-}"
+    fi
 
     while IFS= read -r id; do
         [[ -n "$id" ]] && remote_ids+=("$id")
@@ -66,29 +71,53 @@ main() {
         write_info "Using $config_count peer(s) from config.ini"
     fi
 
-    if [[ -z "${remote_ids[*]-}" ]]; then
-        while IFS= read -r id; do
-            id="$(echo "$id" | xargs)"
-            [[ -n "$id" ]] && is_valid_syncthing_device_id "$id" && wizard_ids+=("$id")
+    if [[ -z "${NET_INTRODUCER_ID:-}" && $config_count -eq 0 ]]; then
+        while IFS= read -r line; do
+            [[ -z "$line" ]] && continue
+            prefix="${line%%:*}"
+            value="${line#*:}"
+            value="$(echo "$value" | xargs)"
+            if [[ "$prefix" == "JOIN" ]]; then
+                join_mode="true"
+                join_hub_id="$value"
+            elif [[ "$prefix" == "PEER" ]]; then
+                [[ -n "$value" ]] && is_valid_syncthing_device_id "$value" && wizard_ids+=("$value")
+            fi
         done < <(invoke_setup_wizard)
         remote_ids=("${wizard_ids[@]}")
+    fi
+
+    if [[ "$join_mode" == "true" && -z "$join_hub_id" ]]; then
+        while :; do
+            join_hub_id="$(mac_ask 'GKG Sync' 'Paste the Hub Device ID:' '')"
+            join_hub_id="$(echo "$join_hub_id" | xargs)"
+            [[ -n "$join_hub_id" ]] && is_valid_syncthing_device_id "$join_hub_id" && break
+        done
     fi
 
     echo ''
     write_info 'Installing... (this may take a few minutes)'
 
     local result device_id gui_url sync_folder
-    if [[ -z "${remote_ids[*]-}" ]]; then
+    if [[ "$join_mode" == "true" ]]; then
+        NET_INTRODUCER_ID="$join_hub_id"
+        result="$(install_syncthing_mode)"
+    elif [[ -z "${remote_ids[*]-}" ]]; then
         result="$(install_syncthing_mode)"
     else
         result="$(install_syncthing_mode "${remote_ids[@]}")"
     fi
+
     device_id="$(echo "$result" | sed -n 's/^DEVICE_ID=//p')"
     gui_url="$(echo "$result" | sed -n 's/^GUI_URL=//p')"
     sync_folder="$(echo "$result" | sed -n 's/^SYNC_FOLDER=//p')"
 
     save_gkg_config_after_install "$device_id" "${wizard_ids[@]}"
     write_ok "Updated config.ini with this machine's Device ID"
+
+    if [[ "$join_mode" == "true" && -n "$join_hub_id" ]]; then
+        ini_set_in_section network introducer_device_id "$join_hub_id" "$CONFIG_INI"
+    fi
 
     show_syncthing_result "$device_id" "$gui_url" "$sync_folder"
 }

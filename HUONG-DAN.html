@@ -180,9 +180,10 @@
     <a href="#phan2">2. Key concepts</a>
     <a href="#phan3">3. First install</a>
     <a href="#phan4">4. Add a machine</a>
-    <a href="#phan5">5. Daily use</a>
-    <a href="#phan6">6. Advanced</a>
-    <a href="#phan7">7. FAQ</a>
+    <a href="#hub">5. Hub / auto device sync</a>
+    <a href="#phan5">6. Daily use</a>
+    <a href="#phan6">7. Advanced</a>
+    <a href="#phan7">8. FAQ</a>
     <a href="#mac">Mac</a>
   </div>
 </nav>
@@ -306,8 +307,48 @@
   </div>
 </section>
 
+<section id="hub">
+  <h2><span class="no">5</span> Hub network / auto device sync <span class="badge moi">NEW</span></h2>
+  <div class="card green">
+    <h3>What it does</h3>
+    <p>Pick <b>one machine to be the hub</b>. Every other machine just runs <b>"Join network"</b> (menu item 6) and pastes the <b>hub's Device ID once</b>. New machines are then added <b>automatically</b> &mdash; no more pasting every Device ID manually into <code>config.ini</code>.</p>
+    <p>Works over Syncthing's built-in <b>introducer</b>: the hub introduces each machine to the others, and it keeps the shared folder up to date across all of them automatically.</p>
+  </div>
+
+  <div class="card blue">
+    <h3>Set up the hub (one time, on ONE machine)</h3>
+    <ol class="steps li-blue">
+      <li>Open <code>config.ini</code> and set:
+        <pre style="background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;font-size:13px">[network]
+is_hub=true
+auto_share=true</pre>
+      </li>
+      <li>Run <b>Install / Add machine</b> on the hub (menu item 1) and note its <b>Device ID</b>.</li>
+    </ol>
+  </div>
+
+  <div class="card green">
+    <h3>Join it from each other machine</h3>
+    <ol class="steps li-green">
+      <li>Install Tailscale (same account) on the new machine.</li>
+      <li>Open the menu:
+        <ul>
+          <li>Windows: <b>GKG-Sync.cmd</b></li>
+          <li>macOS: <b>GKG-Sync.command</b></li>
+        </ul>
+      </li>
+      <li>Choose <b>6. Join network</b> and paste the <b>hub's Device ID</b>.</li>
+      <li>Done &mdash; the hub adds the machine to the sync folder automatically.</li>
+    </ol>
+  </div>
+
+  <div class="ok">
+    <b>Prerequisite:</b> the hub should be <b>online</b> when a new machine joins, and each machine runs <b>Restart sync</b> once. Folder <b>"Documents Sync"</b> should show <b>Synced</b> on all machines.
+  </div>
+</section>
+
 <section id="phan5">
-  <h2><span class="no">5</span> Daily use</h2>
+  <h2><span class="no">6</span> Daily use</h2>
   <div class="card bordered">
     <p>Just <b>put files into</b> <code>Documents/Sync</code> &mdash; everything else is automatic.</p>
     <p>Syncthing stopped?
@@ -318,7 +359,7 @@
 </section>
 
 <section id="phan6">
-  <h2><span class="no">6</span> Advanced: register machines in config</h2>
+  <h2><span class="no">7</span> Advanced: register machines in config</h2>
   <div class="card">
     <p>Optional. Use this if you want a saved list of machines so you don't paste Device IDs every time.</p>
     <details>
@@ -344,6 +385,13 @@ device_id=DEVICE-ID-HERE</pre>
       </div>
     </details>
   </div>
+  <div class="card green">
+    <h3>Prefer the hub / auto-sync?</h3>
+    <p>Skip the manual <code>[peer.N]</code> list — leave <code>[network]</code> like this instead (section 5):</p>
+    <pre style="background:#f8fafc;border:1px solid var(--line);border-radius:8px;padding:12px;overflow:auto;font-size:13px">[network]
+is_hub=true      ; on the hub machine
+auto_share=true  ; auto-share folder with new machines</pre>
+  </div>
 </section>
 
 <section id="mac">
@@ -360,7 +408,7 @@ device_id=DEVICE-ID-HERE</pre>
 </section>
 
 <section id="phan7">
-  <h2><span class="no">7</span> Frequently asked questions</h2>
+  <h2><span class="no">8</span> Frequently asked questions</h2>
   <details>
     <summary>Machines don't see each other / won't sync</summary>
     <div class="body">

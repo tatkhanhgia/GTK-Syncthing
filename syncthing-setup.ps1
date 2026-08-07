@@ -137,7 +137,11 @@ function Invoke-SyncthingApi {
         [object]$Body = $null
     )
 
-    $uri = "http://127.0.0.1:8384$Path"
+    $port = 8384
+    if ($script:PackConfig -and $script:PackConfig.SyncthingPort) {
+        $port = $script:PackConfig.SyncthingPort
+    }
+    $uri = "http://127.0.0.1:$port$Path"
     $params = @{
         Uri         = $uri
         Method      = $Method
@@ -191,25 +195,31 @@ function Add-SyncthingRemoteDevice {
     param(
         [string]$ApiKey,
         [string]$DeviceId,
-        [string]$Name = 'Remote device'
+        [string]$Name = 'Remote device',
+        [switch]$Introducer
     )
 
     if (-not $DeviceId) {
         return
     }
 
+    $deviceId = $DeviceId.Trim()
     $devices = Invoke-SyncthingApi -ApiKey $ApiKey -Method GET -Path '/rest/config/devices'
-    $exists = $devices | Where-Object { $_.deviceID -eq $DeviceId.Trim() }
+    $exists = $devices | Where-Object { $_.deviceID -eq $deviceId }
     if ($exists) {
+        if ($Introducer -and -not $exists.introducer) {
+            $exists.introducer = $true
+            Invoke-SyncthingApi -ApiKey $ApiKey -Method PUT -Path "/rest/config/devices/$deviceId" -Body $exists | Out-Null
+        }
         return
     }
 
     $device = @{
-        deviceID            = $DeviceId.Trim()
+        deviceID            = $deviceId
         name                = $Name
         addresses           = @('dynamic')
         compression         = 'metadata'
-        introducer          = $false
+        introducer          = $Introducer.IsPresent
         skipIntroductionRemovals = $false
         paused              = $false
     }
@@ -220,6 +230,69 @@ function Get-LocalSyncthingDeviceId {
     param([string]$ApiKey)
     $status = Invoke-SyncthingApi -ApiKey $ApiKey -Method GET -Path '/rest/system/status'
     return $status.myID
+}
+
+function Test-SyncthingDeviceId {
+    param([string]$DeviceId)
+
+    if (-not $DeviceId) { return $false }
+    return ($DeviceId.Trim() -match '^[0-9A-Z]{7}(-[0-9A-Z]{7}){7}$')
+}
+
+function Sync-FolderMembership {
+    param(
+        [string]$ApiKey,
+        [string]$FolderId,
+        [string]$SelfDeviceId = ''
+    )
+
+    if (-not $FolderId) { return }
+
+    $folder = Invoke-SyncthingApi -ApiKey $ApiKey -Method GET -Path "/rest/config/folders/$FolderId"
+    if (-not $folder) { return }
+
+    $knownDevices = Invoke-SyncthingApi -ApiKey $ApiKey -Method GET -Path '/rest/config/devices'
+
+    $devices = @()
+    foreach ($d in @($folder.devices)) {
+        if ($d -and $d.deviceID) { $devices += $d }
+    }
+
+    $present = @{}
+    foreach ($d in $devices) { $present[$d.deviceID] = $true }
+
+    $added = 0
+    foreach ($dev in @($knownDevices)) {
+        $devId = $dev.deviceID
+        if (-not $devId) { continue }
+        if ($SelfDeviceId -and $devId -eq $SelfDeviceId) { continue }
+        if ($present.ContainsKey($devId)) { continue }
+        $devices += @{ deviceID = $devId }
+        $present[$devId] = $true
+        $added++
+    }
+
+    if ($added -eq 0) { return }
+
+    $folder.devices = $devices
+
+    $attempt = 0
+    while ($true) {
+        $attempt++
+        try {
+            Invoke-SyncthingApi -ApiKey $ApiKey -Method PUT -Path "/rest/config/folders/$FolderId" -Body $folder | Out-Null
+            Write-Ok "Folder '$FolderId': added $added device(s) (membership sync)."
+            return
+        } catch {
+            $status = 0
+            try { $status = [int]$_.Exception.Response.StatusCode } catch { }
+            if (($status -eq 409 -or $status -eq 500) -and $attempt -lt 3) {
+                Start-Sleep -Seconds 2
+                continue
+            }
+            throw
+        }
+    }
 }
 
 function Register-SyncthingStartup {
@@ -260,7 +333,8 @@ function New-SyncFolderShortcut {
 function Install-SyncthingMode {
     param(
         $Config,
-        [string[]]$RemoteDeviceIds = @()
+        [string[]]$RemoteDeviceIds = @(),
+        [string]$IntroducerDeviceId = ''
     )
 
     Ensure-SyncFolder -Config $Config
@@ -275,6 +349,14 @@ function Install-SyncthingMode {
         if ($id) {
             Add-SyncthingRemoteDevice -ApiKey $apiKey -DeviceId $id
             $sharedDevices += $id.Trim()
+        }
+    }
+
+    if ($IntroducerDeviceId) {
+        $hubId = $IntroducerDeviceId.Trim()
+        Add-SyncthingRemoteDevice -ApiKey $apiKey -DeviceId $hubId -Name 'Hub (introducer)' -Introducer $true
+        if ($sharedDevices -notcontains $hubId) {
+            $sharedDevices += $hubId
         }
     }
 

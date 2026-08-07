@@ -1,7 +1,7 @@
 # GKG-Syncthing - one-click installer (Syncthing)
 
 param(
-    [ValidateSet('Syncthing', 'Ssh', 'Menu')]
+    [ValidateSet('Syncthing', 'Ssh', 'Menu', 'Join')]
     [string]$Mode = 'Syncthing',
     [string[]]$RemoteDeviceIds = @(),
     [switch]$SkipPrompt
@@ -89,6 +89,7 @@ Update-LocalTailscaleIpInConfig -IniPath $iniPath
 
 $configPeerIds = @(Get-PeerDeviceIds)
 $wizardPeerIds = @()
+$joinHub = $false
 
 if ($configPeerIds.Count -gt 0) {
     Write-Info "Using $($configPeerIds.Count) peer(s) from config.ini"
@@ -107,6 +108,32 @@ if ($Mode -eq 'Menu') {
     }
 }
 
+if ($Mode -eq 'Join') {
+    $hubId = $PackConfig.IntroducerDeviceId
+
+    if (-not $hubId -or $SkipPrompt) {
+        if (-not $SkipPrompt) {
+            $wizard = Invoke-SetupWizard -ExistingIds @()
+            $hubId = $wizard.JoinHubDeviceId
+        } else {
+            $hubId = $PackConfig.IntroducerDeviceId
+        }
+    }
+
+    if (-not $hubId) {
+        throw 'Join Hub network: cần Hub Device ID. Vào menu chọn "Join network" lại.'
+    }
+
+    Write-Host ''
+    Write-Info "Joining hub network (hub: $hubId)"
+    Write-Info 'Installing... (this may take a few minutes)'
+    $result = Install-SyncthingMode -Config $PackConfig -IntroducerDeviceId $hubId
+    Save-GkgConfigAfterInstall -IniPath $iniPath -DeviceId $result.DeviceId
+    Write-Ok "Updated config.ini with this machine's Device ID"
+    Show-SyncthingResult -Result $result
+    exit 0
+}
+
 if ($Mode -eq 'Syncthing') {
     $RemoteDeviceIds = @($configPeerIds)
 
@@ -114,15 +141,27 @@ if ($Mode -eq 'Syncthing') {
         if ($SkipPrompt) {
             $RemoteDeviceIds = @(Get-PeerDeviceIds)
         } else {
-            $wizardPeerIds = @(Invoke-SetupWizard -ExistingIds @(Get-PeerDeviceIds))
-            $RemoteDeviceIds = @($wizardPeerIds)
+            $wizard = Invoke-SetupWizard -ExistingIds @(Get-PeerDeviceIds)
+            $wizardPeerIds = @($wizard.PeerIds)
+            if ($wizard.JoinHubDeviceId) {
+                $RemoteDeviceIds = @($wizard.JoinHubDeviceId)
+                $joinHub = $true
+            } else {
+                $RemoteDeviceIds = @($wizardPeerIds)
+            }
         }
     }
 
     Write-Host ''
     Write-Info 'Installing... (this may take a few minutes)'
-    $result = Install-SyncthingMode -Config $PackConfig -RemoteDeviceIds $RemoteDeviceIds
-    Save-GkgConfigAfterInstall -IniPath $iniPath -DeviceId $result.DeviceId -AddedPeerIds $wizardPeerIds
+    if ($joinHub) {
+        Write-Info "Joining hub network (hub: $($RemoteDeviceIds[0]))"
+        $result = Install-SyncthingMode -Config $PackConfig -IntroducerDeviceId $RemoteDeviceIds[0]
+        Save-GkgConfigAfterInstall -IniPath $iniPath -DeviceId $result.DeviceId -AddedPeerIds $wizardPeerIds
+    } else {
+        $result = Install-SyncthingMode -Config $PackConfig -RemoteDeviceIds $RemoteDeviceIds
+        Save-GkgConfigAfterInstall -IniPath $iniPath -DeviceId $result.DeviceId -AddedPeerIds $wizardPeerIds
+    }
     Write-Ok "Updated config.ini with this machine's Device ID"
     Show-SyncthingResult -Result $result
     exit 0

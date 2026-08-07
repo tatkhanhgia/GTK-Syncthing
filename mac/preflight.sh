@@ -50,10 +50,28 @@ invoke_setup_wizard() {
 
     echo '' >&2
     echo '--- Step 1: Machine type ---' >&2
-    choice="$(mac_ask 'GKG Sync' 'Are you setting up a NEW machine (1) or an EXISTING machine (2)?\n\n1 = Add this new machine\n2 = This machine was already synced' '1')"
+    choice="$(mac_ask 'GKG Sync' 'Are you setting up a NEW machine (1), EXISTING machine (2), or joining a Hub network (3)?\n\n1 = Add this new machine\n2 = This machine was already synced\n3 = Only need the Hub Device ID' '1')"
     choice="$(echo "$choice" | xargs)"
 
-    if [[ "$choice" == "2" ]]; then
+    if [[ "$choice" == "3" ]]; then
+        echo '' >&2
+        echo '--- Step 2: Hub Device ID ---' >&2
+        while :; do
+            hub_id="$(mac_ask 'GKG Sync' 'Paste the Hub machine Device ID (required):' '')"
+            hub_id="$(echo "$hub_id" | xargs)"
+            if [[ -z "$hub_id" ]]; then
+                mac_alert 'GKG Sync' 'Hub Device ID cannot be empty. Paste it and press OK.'
+                continue
+            fi
+            if ! is_valid_syncthing_device_id "$hub_id"; then
+                mac_alert 'GKG Sync' 'Hub Device ID is invalid (7 groups of 7 with dashes). Paste again.'
+                continue
+            fi
+            break
+        done
+        echo "JOIN:$hub_id"
+        return
+    elif [[ "$choice" == "2" ]]; then
         role=2
     else
         role=1
@@ -89,7 +107,9 @@ invoke_setup_wizard() {
         done
     fi
 
-    printf '%s\n' "${ids[@]}"
+    for tmp in "${ids[@]}"; do
+        echo "PEER:$tmp"
+    done
 }
 
 write_install_result_html() {

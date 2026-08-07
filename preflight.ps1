@@ -77,10 +77,35 @@ function Invoke-SetupWizard {
     Write-Host '--- Step 1: Machine type ---' -ForegroundColor Cyan
     Write-Host '  1 = NEW machine   (adding this machine for the first time)'
     Write-Host '  2 = EXISTING machine   (other machines already sync; connecting this one)'
+    Write-Host '  3 = Join Hub network   (only need the Hub Device ID)'
     Write-Host ''
-    $role = Read-Host 'Choose 1 or 2'
+    $role = Read-Host 'Choose 1, 2, or 3'
 
     $ids = [System.Collections.ArrayList]@($ExistingIds)
+
+    if ($role -eq '3') {
+        Write-Host ''
+        Write-Host '--- Step 2: Hub Device ID ---' -ForegroundColor Cyan
+        Write-Host 'Paste the Hub machine Device ID here (required):'
+        while ($true) {
+            $hubId = Read-Host 'Hub Device ID'
+            $hubId = if ($hubId) { $hubId.Trim() } else { '' }
+            if (-not $hubId) {
+                Write-Warn 'Không nhập Hub Device ID. Thử lại hoặc nhập để tiếp tục.'
+                continue
+            }
+            if (-not (Test-SyncthingDeviceId -DeviceId $hubId)) {
+                Write-Warn 'Hub Device ID không hợp lệ (56 ký tự hex, nhóm 7 với dấu -). Hãy dán lại.'
+                continue
+            }
+            break
+        }
+        return @{
+            PeerIds          = @($ids | Select-Object -Unique)
+            JoinHubDeviceId  = $hubId
+            JoinMode         = $true
+        }
+    }
 
     if ($role -eq '2') {
         Write-Host ''
@@ -107,7 +132,11 @@ function Invoke-SetupWizard {
         }
     }
 
-    return @($ids | Select-Object -Unique)
+    return @{
+        PeerIds         = @($ids | Select-Object -Unique)
+        JoinHubDeviceId = ''
+        JoinMode        = $false
+    }
 }
 
 function Write-InstallResultHtml {

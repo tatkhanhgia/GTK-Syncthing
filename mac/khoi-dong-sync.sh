@@ -31,6 +31,13 @@ write_info 'Starting Syncthing...'
 start_syncthing_process
 sleep 2
 
+if [[ "${NET_IS_HUB:-false}" == "true" && -f "$(get_syncthing_config_path)" ]]; then
+    write_info 'Hub detected — syncing folder membership...'
+    api_key="$(get_syncthing_api_key "$(get_syncthing_config_path)")"
+    my_id="$(get_local_syncthing_device_id "$api_key")"
+    sync_folder_membership "$api_key" "$SYNCTHING_FOLDER_ID" "$my_id" || true
+fi
+
 write_ok 'Opening Sync folder...'
 open "$SYNC_FOLDER" 2>/dev/null || true
 

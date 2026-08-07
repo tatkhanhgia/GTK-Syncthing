@@ -26,6 +26,18 @@ Write-Host 'Starting Syncthing...' -ForegroundColor Cyan
 Start-SyncthingProcess -Config $PackConfig
 Start-Sleep -Seconds 2
 
+if ($PackConfig.IsHub) {
+    Write-Host 'Hub detected — syncing folder membership...' -ForegroundColor Cyan
+    try {
+        $configPath = Wait-SyncthingConfig
+        $apiKey = Get-SyncthingApiKey -ConfigPath $configPath
+        $myId = Get-LocalSyncthingDeviceId -ApiKey $apiKey
+        Sync-FolderMembership -ApiKey $apiKey -FolderId $PackConfig.SyncthingFolderId -SelfDeviceId $myId
+    } catch {
+        Write-Host "[Warning] Membership sync: $($_.Exception.Message)" -ForegroundColor Yellow
+    }
+}
+
 Write-Host 'Opening Sync folder...' -ForegroundColor Green
 Start-Process $PackConfig.SyncFolder
 
