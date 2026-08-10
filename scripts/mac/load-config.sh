@@ -3,7 +3,7 @@
 
 set -euo pipefail
 
-GKG_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+GKG_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 ini_get() {
     local section="$1"

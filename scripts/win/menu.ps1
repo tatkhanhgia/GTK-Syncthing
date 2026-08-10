@@ -7,6 +7,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$GkgRoot = Split-Path (Split-Path $ScriptDir -Parent) -Parent
 
 function Get-DefaultSyncFolder {
     return Join-Path $env:USERPROFILE 'Documents\Sync'
@@ -72,8 +73,8 @@ function Open-SyncFolder {
 }
 
 function Open-Guide {
-    $startHere = Join-Path $ScriptDir 'START-HERE.html'
-    $huongDan = Join-Path $ScriptDir 'HUONG-DAN.html'
+    $startHere = Join-Path $GkgRoot 'START-HERE.html'
+    $huongDan = Join-Path $GkgRoot 'HUONG-DAN.html'
     if (Test-Path $startHere) {
         Start-Process $startHere | Out-Null
     } elseif (Test-Path $huongDan) {

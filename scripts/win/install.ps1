@@ -9,10 +9,11 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$GkgRoot = Split-Path (Split-Path $ScriptDir -Parent) -Parent
 
 . (Join-Path $ScriptDir 'load-config.ps1')
 
-$iniPath = Join-Path $ScriptDir 'config.ini'
+$iniPath = Join-Path $GkgRoot 'config.ini'
 Clear-DuplicateLocalDeviceId -IniPath $iniPath
 Import-GkgConfig -ScriptDir $ScriptDir
 Update-LocalTailscaleIpInConfig -IniPath $iniPath
@@ -35,7 +36,7 @@ function Show-SyncthingResult {
     param($Result)
 
     $htmlPath = Write-InstallResultHtml `
-        -ScriptDir $ScriptDir `
+        -ScriptDir $GkgRoot `
         -DeviceId $Result.DeviceId `
         -SyncFolder $Result.SyncFolder `
         -GuiUrl $Result.GuiUrl
@@ -60,7 +61,7 @@ function Show-SyncthingResult {
 }
 
 function Install-SshMode {
-    $legacyDir = Join-Path $ScriptDir 'legacy'
+    $legacyDir = Join-Path $GkgRoot 'legacy'
     Write-Info 'Advanced mode: SSH + Unison (legacy)'
     $installUnison = Join-Path $legacyDir 'install-unison.cmd'
     $setupSync = Join-Path $legacyDir 'setup-sync.cmd'
@@ -84,7 +85,7 @@ function Install-SshMode {
 Show-Banner
 Ensure-Tailscale
 
-$iniPath = Join-Path $ScriptDir 'config.ini'
+$iniPath = Join-Path $GkgRoot 'config.ini'
 Update-LocalTailscaleIpInConfig -IniPath $iniPath
 
 $configPeerIds = @(Get-PeerDeviceIds)

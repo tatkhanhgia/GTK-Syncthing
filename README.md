@@ -24,13 +24,31 @@ Pick an action from the menu:
 
 Install [Tailscale](https://tailscale.com) first (same account on every machine).
 
-Legacy shortcuts (`Cai-Dat-Sync.cmd`, `Bat-Dau-O-Day.cmd`, …) still work — they open the same menu or run one action.
+Legacy shortcuts (in `shortcuts/`) still work — `Cai-Dat-Sync.cmd` and friends open the same menu or run one action.
 
 See **`START-HERE.html`** for a visual guide.
+
+---
+
+## Project layout
+
+```
+.
+├── GKG-Sync.cmd / GKG-Sync.command   ← double-click to open the menu (Win / Mac)
+├── README.txt / START-HERE.html      ← start reading here
+├── HUONG-DAN.html                    ← full user guide
+├── config.example.ini                ← template; script copies it to config.ini
+├── config.ini                        ← shared config (machine-specific, not committed)
+├── scripts/
+│   ├── win/   ← Windows engine (PowerShell)
+│   └── mac/   ← macOS engine (bash)
+├── shortcuts/                        ← optional extra launchers (legacy compatibility)
+└── legacy/                           ← old SSH/Unison mode (advanced)
+```
 
 ---
 
 ## Technical notes
 
 Uses [Syncthing](https://syncthing.net/) over [Tailscale](https://tailscale.com/).  
-Shared config: **`config.ini`** (see `[network]` for the hub/auto-sync setup). Build zip: `.\tao-goi-cai.ps1`
+Shared config: **`config.ini`** (see `[network]` for the hub/auto-sync setup). Build zip: `powershell ./scripts/win/tao-goi-cai.ps1` → outputs `GKG-Syncthing.zip` in the project root.

@@ -45,6 +45,11 @@ function Expand-ConfigPath {
     return $expanded
 }
 
+function Get-GkgRoot {
+    param([string]$ScriptDir)
+    return Split-Path (Split-Path $ScriptDir -Parent) -Parent
+}
+
 function Get-LocalTailscaleIp {
     if (-not (Get-Command tailscale -ErrorAction SilentlyContinue)) {
         return $null
@@ -210,11 +215,11 @@ function Clear-DuplicateLocalDeviceId {
 
 function Export-LegacyConfigToIni {
     param(
-        [string]$ScriptDir,
+        [string]$GkgRoot,
         [string]$IniPath
     )
 
-    . (Join-Path $ScriptDir 'config.ps1')
+    . (Join-Path $GkgRoot 'config.ps1')
 
     $lines = @(
         '; Auto-migrated from config.ps1'
@@ -249,13 +254,14 @@ function Export-LegacyConfigToIni {
 function Import-GkgConfig {
     param([string]$ScriptDir)
 
-    $iniPath = Join-Path $ScriptDir 'config.ini'
-    $legacyPath = Join-Path $ScriptDir 'config.ps1'
-    $examplePath = Join-Path $ScriptDir 'config.example.ini'
+    $gkgRoot = Get-GkgRoot -ScriptDir $ScriptDir
+    $iniPath = Join-Path $gkgRoot 'config.ini'
+    $legacyPath = Join-Path $gkgRoot 'config.ps1'
+    $examplePath = Join-Path $gkgRoot 'config.example.ini'
 
     if (-not (Test-Path $iniPath)) {
         if (Test-Path $legacyPath) {
-            Export-LegacyConfigToIni -ScriptDir $ScriptDir -IniPath $iniPath
+            Export-LegacyConfigToIni -GkgRoot $gkgRoot -IniPath $iniPath
         } elseif (Test-Path $examplePath) {
             Copy-Item $examplePath $iniPath
             Write-Host 'Created config.ini from config.example.ini' -ForegroundColor Yellow

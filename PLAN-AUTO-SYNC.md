@@ -59,7 +59,7 @@ Windows (`*.ps1`):
 - `install.ps1`: điều hướng nhánh join theo `[network]`.
 - `menu.ps1`: thêm mục "6. Join network".
 
-macOS (`mac/*.sh` — khớp 1-1):
+macOS (`scripts/mac/*.sh` — khớp 1-1):
 - `load-config.sh`: biến `NET_IS_HUB`/`NET_INTRODUCER_ID`/`NET_AUTO_SHARE`.
 - `syncthing-setup.sh`: `add_syncthing_remote_device` thêm arg `--introducer`; `install_syncthing_mode` nhận introducer id.
 - `preflight.sh`, `install.sh`, `menu.sh` (`mac_choose` chuỗi AppleScript cứng phải sửa cả list + dispatch).

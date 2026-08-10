@@ -1,30 +1,31 @@
 # Build distribution zip (run from project root)
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$OutZip = Join-Path $ScriptDir 'GKG-Syncthing.zip'
+$GkgRoot = Split-Path (Split-Path $ScriptDir -Parent) -Parent
+$OutZip = Join-Path $GkgRoot 'GKG-Syncthing.zip'
 
 $include = @(
     'README.txt', 'README.md',
-    'GKG-Sync.cmd', 'GKG-Sync.command', 'menu.ps1',
-    'Bat-Dau-O-Day.cmd', 'Cai-Dat-Sync.cmd', 'Cai-Dat-Cho-Mac.command',
-    'Huong-Dan.cmd', 'Khoi-Dong-Sync.cmd',
+    'GKG-Sync.cmd', 'GKG-Sync.command',
     'START-HERE.html', 'HUONG-DAN.html',
-    'config.example.ini', 'config.example.ps1', 'load-config.ps1', 'preflight.ps1',
-    'install.ps1', 'syncthing-setup.ps1', 'khoi-dong-sync.ps1', 'sync-now.ps1', 'mac', 'legacy'
+    'config.example.ini', 'config.example.ps1',
+    'scripts\win\menu.ps1', 'scripts\win\install.ps1', 'scripts\win\load-config.ps1',
+    'scripts\win\preflight.ps1', 'scripts\win\syncthing-setup.ps1',
+    'scripts\win\khoi-dong-sync.ps1', 'scripts\win\sync-now.ps1',
+    'scripts\mac', 'shortcuts', 'legacy'
 )
-$OutDir = Split-Path $OutZip -Parent
 
 $staging = Join-Path $env:TEMP "GKG-Syncthing-$(Get-Date -Format 'yyyyMMddHHmmss')"
 New-Item -ItemType Directory -Force -Path $staging | Out-Null
 
 foreach ($name in $include) {
-    $src = Join-Path $ScriptDir $name
+    $src = Join-Path $GkgRoot $name
     if (Test-Path $src) {
         Copy-Item -Recurse -Force $src (Join-Path $staging $name)
     }
 }
 
-New-Item -ItemType Directory -Force -Path $OutDir | Out-Null
+New-Item -ItemType Directory -Force -Path (Split-Path $OutZip -Parent) | Out-Null
 if (Test-Path $OutZip) { Remove-Item -Force $OutZip }
 Compress-Archive -Path (Join-Path $staging '*') -DestinationPath $OutZip -Force
 Remove-Item -Recurse -Force $staging

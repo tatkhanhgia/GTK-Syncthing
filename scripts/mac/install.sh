@@ -4,7 +4,7 @@
 set -euo pipefail
 
 MAC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GKG_ROOT="$(cd "$MAC_DIR/.." && pwd)"
+GKG_ROOT="$(cd "$MAC_DIR/../.." && pwd)"
 
 # shellcheck source=load-config.sh
 source "$MAC_DIR/load-config.sh"

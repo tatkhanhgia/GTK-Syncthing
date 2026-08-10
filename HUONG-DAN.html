@@ -204,10 +204,10 @@
     <h3>Files to remember</h3>
     <table>
       <tr><th>OS</th><th>Install / add machine</th><th>Guide</th><th>Restart Syncthing</th></tr>
-      <tr><td><b>Windows</b></td><td><b>Cai-Dat-Sync.cmd</b></td><td><b>Huong-Dan.cmd</b></td><td><b>Khoi-Dong-Sync.cmd</b></td></tr>
-      <tr><td><b>macOS</b></td><td><b>mac/cai-dat-sync.command</b></td><td><b>mac/huong-dan.command</b></td><td><b>mac/khoi-dong-sync.command</b></td></tr>
+      <tr><td><b>Windows</b></td><td><b>shortcuts/Cai-Dat-Sync.cmd</b></td><td><b>shortcuts/Huong-Dan.cmd</b></td><td><b>shortcuts/Khoi-Dong-Sync.cmd</b></td></tr>
+      <tr><td><b>macOS</b></td><td><b>shortcuts/cai-dat-sync.command</b></td><td><b>shortcuts/huong-dan.command</b></td><td><b>shortcuts/khoi-dong-sync.command</b></td></tr>
     </table>
-    <p style="margin-top:12px;color:var(--muted);font-size:14px">First time on Mac: open Terminal and run <code>chmod +x mac/*.sh mac/*.command</code>. Other <code>.ps1</code> / <code>.sh</code> files are system scripts.</p>
+    <p style="margin-top:12px;color:var(--muted);font-size:14px">First time on Mac: open Terminal and run <code>chmod +x GKG-Sync.command scripts/mac/*.sh shortcuts/*.command</code>.</p>
   </div>
 </section>
 
@@ -240,7 +240,7 @@
   <div class="card">
     <ol class="steps">
       <li>Make sure you have a <code>Documents\Sync</code> folder in your Windows profile (the script creates it if missing).</li>
-      <li>Run: <b>Cai-Dat-Sync.cmd</b></li>
+      <li>Run: <b>GKG-Sync.cmd</b></li>
       <li>When asked for "Device ID" &rarr; press <b>Enter</b> to skip (no other machines yet).</li>
       <li>Done. <b>Save the "YOUR DEVICE ID"</b> shown at the end.</li>
     </ol>
@@ -260,8 +260,8 @@
       <li>Copy the whole installer folder to the new machine (USB, AirDrop, LAN).</li>
       <li>Run the install launcher:
         <ul>
-          <li>Windows: <b>Cai-Dat-Sync.cmd</b></li>
-          <li>macOS: <b>mac/cai-dat-sync.command</b> (after <code>chmod +x mac/*.command</code> if first time)</li>
+          <li>Windows: <b>GKG-Sync.cmd</b></li>
+          <li>macOS: <b>GKG-Sync.command</b> (after <code>chmod +x GKG-Sync.command</code> if first time)</li>
         </ul>
       </li>
       <li>
@@ -285,8 +285,8 @@
       <li>Receive the new machine's Device ID (from Step A).</li>
       <li>Run the install launcher on the existing machine &rarr; Enter:
         <ul>
-          <li>Windows: <b>Cai-Dat-Sync.cmd</b></li>
-          <li>macOS: <b>mac/cai-dat-sync.command</b></li>
+          <li>Windows: <b>GKG-Sync.cmd</b></li>
+          <li>macOS: <b>GKG-Sync.command</b></li>
         </ul>
       </li>
       <li>When asked for "Device ID": paste the new machine's Device ID &rarr; Enter. (Skip IDs you already added.)</li>
@@ -352,8 +352,8 @@ auto_share=true</pre>
   <div class="card bordered">
     <p>Just <b>put files into</b> <code>Documents/Sync</code> &mdash; everything else is automatic.</p>
     <p>Syncthing stopped?
-      Windows: <b>Khoi-Dong-Sync.cmd</b>.
-      Mac: <b>mac/khoi-dong-sync.command</b>.
+      Windows: <b>GKG-Sync.cmd</b>.
+      Mac: <b>GKG-Sync.command</b>.
     </p>
   </div>
 </section>
@@ -400,8 +400,8 @@ auto_share=true  ; auto-share folder with new machines</pre>
     <ol class="steps li-green">
       <li>Install <b>Tailscale</b> from the Mac App Store or <code>tailscale.com</code>, same account as Windows.</li>
       <li>Install <b>Homebrew</b> (recommended) so the script can install Syncthing: <code>/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</code></li>
-      <li>First time: <code>chmod +x mac/*.sh mac/*.command</code> in the installer folder.</li>
-      <li>Double-click <b>mac/cai-dat-sync.command</b> — same flow as Windows (enter existing Device IDs, copy Mac Device ID to send back).</li>
+      <li>First time: <code>chmod +x GKG-Sync.command scripts/mac/*.sh shortcuts/*.command</code> in the installer folder.</li>
+      <li>Double-click <b>GKG-Sync.command</b> — same flow as Windows (enter existing Device IDs, copy Mac Device ID to send back).</li>
       <li>macOS may ask for network / Terminal permission the first time — choose <b>Allow</b>.</li>
     </ol>
   </div>

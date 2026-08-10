@@ -4,7 +4,7 @@
 set -euo pipefail
 
 MAC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-GKG_ROOT="$(cd "$MAC_DIR/.." && pwd)"
+GKG_ROOT="$(cd "$MAC_DIR/../.." && pwd)"
 
 # shellcheck source=load-config.sh
 source "$MAC_DIR/load-config.sh"
@@ -13,7 +13,7 @@ source "$MAC_DIR/syncthing-setup.sh"
 
 if ! load_gkg_config "$GKG_ROOT"; then
     echo ''
-    write_err 'No config.ini found. Run mac/cai-dat-sync.command first.'
+    write_err 'No config.ini found. Run GKG-Sync.command first.'
     echo ''
     exit 1
 fi
@@ -21,7 +21,7 @@ fi
 if ! test_syncthing_installed; then
     echo ''
     write_err 'Syncthing is not installed.'
-    echo 'Run mac/cai-dat-sync.command first.'
+    echo 'Run GKG-Sync.command first.'
     echo ''
     exit 1
 fi

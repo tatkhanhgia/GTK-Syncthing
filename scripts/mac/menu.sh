@@ -3,8 +3,8 @@
 
 set -euo pipefail
 
-GKG_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-MAC_DIR="$GKG_ROOT/mac"
+GKG_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+MAC_DIR="$GKG_ROOT/scripts/mac"
 
 # shellcheck source=load-config.sh
 source "$MAC_DIR/load-config.sh" 2>/dev/null || true
@@ -52,7 +52,7 @@ open_manage() {
 }
 
 run_install() {
-    chmod +x "$MAC_DIR"/*.sh "$GKG_ROOT"/*.command 2>/dev/null || true
+    chmod +x "$MAC_DIR"/*.sh "$GKG_ROOT"/shortcuts/*.command 2>/dev/null || true
     bash "$MAC_DIR/install.sh"
 }
 
@@ -62,7 +62,7 @@ run_restart() {
 }
 
 run_join() {
-    chmod +x "$MAC_DIR"/*.sh "$GKG_ROOT"/*.command 2>/dev/null || true
+    chmod +x "$MAC_DIR"/*.sh "$GKG_ROOT"/shortcuts/*.command 2>/dev/null || true
     bash "$MAC_DIR/install.sh" join
 }
 

@@ -13,4 +13,14 @@ NEW - "Sync now": instantly re-checks and shares devices with the sync folder.
 
 Sync folder: Documents/Sync
 
-(Legacy shortcuts Cai-Dat-Sync, Bat-Dau-O-Day... still work — they open the main menu.)
+Project layout:
+  GKG-Sync.cmd / GKG-Sync.command   launch menu (Win / Mac)
+  README.txt, START-HERE.html       start here
+  HUONG-DAN.html                    full guide
+  config.example.ini                template (script copies it to config.ini)
+  config.ini                        shared config (machine-specific)
+  scripts/win, scripts/mac          engine scripts
+  shortcuts/                        extra launchers (legacy)
+  legacy/                           old SSH/Unison mode
+
+(Legacy shortcuts in the shortcuts/ folder still work — they open the same menu.)
