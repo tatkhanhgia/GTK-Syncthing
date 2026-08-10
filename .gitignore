@@ -11,3 +11,6 @@ KET-QUA-CAI-DAT.html
 # Windows
 Thumbs.db
 Desktop.ini
+
+# macOS
+.DS_Store
