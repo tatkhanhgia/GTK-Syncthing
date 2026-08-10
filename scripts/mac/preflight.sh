@@ -64,7 +64,7 @@ invoke_setup_wizard() {
                 continue
             fi
             if ! is_valid_syncthing_device_id "$hub_id"; then
-                mac_alert 'GKG Sync' 'Hub Device ID is invalid (7 groups of 7 with dashes). Paste again.'
+                mac_alert 'GKG Sync' 'Hub Device ID is invalid (8 groups of 7 with dashes). Paste again.'
                 continue
             fi
             break

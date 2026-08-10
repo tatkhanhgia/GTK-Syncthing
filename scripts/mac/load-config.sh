@@ -139,7 +139,7 @@ load_gkg_config() {
 
 is_valid_syncthing_device_id() {
     local id="$1"
-    [[ "$id" =~ ^[A-Z0-9]{7}(-[A-Z0-9]{7}){6}$ ]]
+    [[ "$id" =~ ^[A-Z0-9]{7}(-[A-Z0-9]{7}){7}$ ]]
 }
 
 get_local_tailscale_ip() {
