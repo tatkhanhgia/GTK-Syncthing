@@ -106,7 +106,11 @@ jobs:
           else
             RANGE="HEAD"
           fi
-          CHANGES=$(git log --oneline --no-merges "$RANGE" 2>/dev/null | sed 's/^/- /' || true)
+          {
+            echo "**Changes since last release:**"
+            echo ""
+            git log --oneline --no-merges "$RANGE" 2>/dev/null | sed 's/^/- /' || true
+          } > notes.md
           gh release create "$TAG" "${{ steps.build.outputs.asset }}" \
             --title "$TAG" \
-            --notes "**Changes since last release:**%0A$CHANGES"
+            --notes-file notes.md
