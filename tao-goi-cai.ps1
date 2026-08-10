@@ -1,7 +1,7 @@
 # Build distribution zip (run from project root)
 $ErrorActionPreference = 'Stop'
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
-$OutZip = Join-Path $env:USERPROFILE 'Documents\Sync\GKG-Syncthing.zip'
+$OutZip = Join-Path $ScriptDir 'GKG-Syncthing.zip'
 
 $include = @(
     'README.txt', 'README.md',
@@ -10,7 +10,7 @@ $include = @(
     'Huong-Dan.cmd', 'Khoi-Dong-Sync.cmd',
     'START-HERE.html', 'HUONG-DAN.html',
     'config.example.ini', 'config.example.ps1', 'load-config.ps1', 'preflight.ps1',
-    'install.ps1', 'syncthing-setup.ps1', 'khoi-dong-sync.ps1', 'mac', 'legacy'
+    'install.ps1', 'syncthing-setup.ps1', 'khoi-dong-sync.ps1', 'sync-now.ps1', 'mac', 'legacy'
 )
 $OutDir = Split-Path $OutZip -Parent
 
