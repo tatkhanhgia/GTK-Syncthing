@@ -14,3 +14,7 @@ Desktop.ini
 
 # macOS
 .DS_Store
+
+# IDE
+.idea/
+*.iml
