@@ -4,7 +4,9 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 GKG_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
-OUT_ZIP="$GKG_ROOT/GKG-Syncthing.zip"
+
+TAG="$(git -C "$GKG_ROOT" describe --tags --abbrev=0 2>/dev/null || echo '0.0.0')"
+OUT_ZIP="$GKG_ROOT/GKG-Syncthing-${TAG#v}.zip"
 
 STAGING="$(mktemp -d)"
 trap 'rm -rf "$STAGING"' EXIT

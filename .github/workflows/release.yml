@@ -1,0 +1,112 @@
+name: Auto Release
+
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: 'Force version bump (auto, major, minor, patch)'
+        required: false
+        default: auto
+        type: choice
+        options:
+          - auto
+          - major
+          - minor
+          - patch
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout full history
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Resolve next version
+        id: version
+        run: |
+          LAST_TAG=$(git tag --sort=-v:refname | head -n1 || true)
+          if [ -z "$LAST_TAG" ]; then
+            NEXT="1.0.0"
+          else
+            CUR=${LAST_TAG#v}
+            MAJOR=${CUR%%.*}
+            REST=${CUR#*.}
+            MINOR=${REST%%.*}
+            PATCH=${REST##*.}
+
+            BUMP="${{ github.event.inputs.bump || 'auto' }}"
+
+            if [ "$BUMP" = "auto" ]; then
+              COMMITS=$(git log "$LAST_TAG..HEAD" --oneline --no-merges)
+              if echo "$COMMITS" | grep -qiE 'BREAKING[^:]*:|![a-z]+|^[a-z]+(\([^)]*\))?!?:' || \
+                 git log "$LAST_TAG..HEAD" --format=%B --no-merges | grep -qiE '^.*!|BREAKING[ -]CHANGE'; then
+                BUMP=major
+              elif echo "$COMMITS" | grep -qiE '^feat(\([^)]*\))?:'; then
+                BUMP=minor
+              else
+                BUMP=patch
+              fi
+            fi
+
+            case "$BUMP" in
+              major) MAJOR=$((MAJOR + 1)); MINOR=0; PATCH=0 ;;
+              minor) MINOR=$((MINOR + 1)); PATCH=0 ;;
+              *)     PATCH=$((PATCH + 1)) ;;
+            esac
+            NEXT="$MAJOR.$MINOR.$PATCH"
+          fi
+
+          echo "next=$NEXT" >> "$GITHUB_OUTPUT"
+          echo "last=$LAST_TAG" >> "$GITHUB_OUTPUT"
+          echo "Next version: v$NEXT (last: $LAST_TAG)"
+
+      - name: Check no tag overlap
+        env:
+          NEXT: ${{ steps.version.outputs.next }}
+        run: |
+          if git rev-parse -q --verify "refs/tags/v$NEXT" >/dev/null; then
+            echo "Tag v$NEXT already exists — nothing new to release."
+            exit 1
+          fi
+
+      - name: Build zip
+        id: build
+        env:
+          NEXT: ${{ steps.version.outputs.next }}
+        run: |
+          ./scripts/mac/tao-goi-cai.sh
+          mv GKG-Syncthing-*.zip "GKG-Syncthing-$NEXT.zip"
+          echo "asset=GKG-Syncthing-$NEXT.zip" >> "$GITHUB_OUTPUT"
+
+      - name: Create tag
+        env:
+          NEXT: ${{ steps.version.outputs.next }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "v$NEXT"
+          git push origin "v$NEXT"
+
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NEXT: ${{ steps.version.outputs.next }}
+          LAST: ${{ steps.version.outputs.last }}
+        run: |
+          TAG="v$NEXT"
+          if [ -n "$LAST" ] && git rev-parse -q --verify "refs/tags/$LAST" >/dev/null; then
+            RANGE="$LAST..HEAD"
+          else
+            RANGE="HEAD"
+          fi
+          CHANGES=$(git log --oneline --no-merges "$RANGE" 2>/dev/null | sed 's/^/- /' || true)
+          gh release create "$TAG" "${{ steps.build.outputs.asset }}" \
+            --title "$TAG" \
+            --notes "**Changes since last release:**%0A$CHANGES"
