@@ -11,7 +11,7 @@ source "$MAC_DIR/load-config.sh" 2>/dev/null || true
 
 mac_choose() {
     osascript <<'APPLESCRIPT'
-set choices to {"1. Install / Add machine", "2. Restart sync", "3. Open Sync folder", "4. Guide", "5. Syncthing dashboard", "6. Join network"}
+set choices to {"1. Install / Add machine", "2. Restart sync", "3. Open Sync folder", "4. Guide", "5. Syncthing dashboard", "6. Join network", "7. Sync now"}
 set picked to choose from list choices with title "GKG Sync" with prompt "What do you want to do?" default items {"1. Install / Add machine"}
 if picked is false then
     return "CANCEL"
@@ -66,6 +66,11 @@ run_join() {
     bash "$MAC_DIR/install.sh" join
 }
 
+run_sync_now() {
+    chmod +x "$MAC_DIR"/*.sh 2>/dev/null || true
+    bash "$MAC_DIR/sync-now.sh"
+}
+
 dispatch_action() {
     local choice="$1"
     case "$choice" in
@@ -87,6 +92,9 @@ dispatch_action() {
             ;;
         *"Join"*|*"6."*)
             run_join
+            ;;
+        *"Sync now"*|*"7."*)
+            run_sync_now
             ;;
         CANCEL)
             exit 0
@@ -120,6 +128,7 @@ case "${1:-Menu}" in
     Install)  run_install ;;
     Restart)  run_restart ;;
     Join)     run_join ;;
+    SyncNow)  run_sync_now ;;
     OpenSync) open_sync_folder ;;
     Guide)    open_guide ;;
     Manage)   open_manage ;;

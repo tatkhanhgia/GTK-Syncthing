@@ -53,6 +53,16 @@ function Start-RestartConsole {
     ) | Out-Null
 }
 
+function Start-SyncNowConsole {
+    $syncNowScript = Join-Path $ScriptDir 'sync-now.ps1'
+    Start-Process -FilePath 'powershell.exe' -ArgumentList @(
+        '-NoProfile',
+        '-ExecutionPolicy', 'Bypass',
+        '-NoExit',
+        '-File', "`"$syncNowScript`""
+    ) | Out-Null
+}
+
 function Open-SyncFolder {
     $folder = Get-ConfiguredSyncFolder
     if (-not (Test-Path $folder)) {
@@ -89,7 +99,7 @@ function Show-MainMenu {
 
     $form = New-Object System.Windows.Forms.Form
     $form.Text = 'GKG Sync - File sync'
-    $form.Size = New-Object System.Drawing.Size(440, 500)
+    $form.Size = New-Object System.Drawing.Size(440, 540)
     $form.StartPosition = 'CenterScreen'
     $form.FormBorderStyle = [System.Windows.Forms.FormBorderStyle]::FixedDialog
     $form.MaximizeBox = $false
@@ -161,13 +171,17 @@ function Show-MainMenu {
         Start-JoinConsole
     })
 
+    [void](New-MenuButton -Text '7. Sync now' -Top 394 -BackColor $green -OnClick {
+        Start-SyncNowConsole
+    })
+
     $hint = New-Object System.Windows.Forms.Label
     $hint.Text = 'First time? Click item 1 and follow the instructions in the new window.'
     $hint.Font = New-Object System.Drawing.Font('Segoe UI', 9)
     $hint.ForeColor = [System.Drawing.Color]::FromArgb(100, 116, 139)
     $hint.AutoSize = $false
     $hint.Size = New-Object System.Drawing.Size(380, 36)
-    $hint.Location = New-Object System.Drawing.Point(26, 402)
+    $hint.Location = New-Object System.Drawing.Point(26, 458)
     $form.Controls.Add($hint)
 
     [void]$form.ShowDialog()
