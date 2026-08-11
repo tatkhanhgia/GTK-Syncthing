@@ -34,12 +34,16 @@ if ($PackConfig.IsHub) {
         $myId = Get-LocalSyncthingDeviceId -ApiKey $apiKey
         Sync-FolderMembership -ApiKey $apiKey -FolderId $PackConfig.SyncthingFolderId -SelfDeviceId $myId
     } catch {
-        Write-Host "[Warning] Membership sync: $($_.Exception.Message)" -ForegroundColor Yellow
+        Write-Host ('[Warning] Membership sync: ' + $_.Exception.Message) -ForegroundColor Yellow
     }
 }
 
 Write-Host 'Opening Sync folder...' -ForegroundColor Green
-Start-Process $PackConfig.SyncFolder
+try {
+    Start-Process $PackConfig.SyncFolder | Out-Null
+} catch {
+    Write-Host "Open folder manually: $($PackConfig.SyncFolder)" -ForegroundColor Yellow
+}
 
 $url = Get-SyncthingGuiUrl
 Write-Host "Syncthing management page: $url" -ForegroundColor Green

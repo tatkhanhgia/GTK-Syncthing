@@ -39,7 +39,7 @@ try {
         Write-Host "Member machine (hub: $($PackConfig.IntroducerDeviceId)) - waiting for hub to share." -ForegroundColor Yellow
     }
 } catch {
-    Write-Host "[Warning] Membership sync: $($_.Exception.Message)" -ForegroundColor Yellow
+    Write-Host ('[Warning] Membership sync: ' + $_.Exception.Message) -ForegroundColor Yellow
 }
 
 Write-Host ''

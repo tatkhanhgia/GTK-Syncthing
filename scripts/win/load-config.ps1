@@ -234,6 +234,11 @@ function Export-LegacyConfigToIni {
         "folder_id=$($PackConfig.SyncthingFolderId)"
         "folder_label=$($PackConfig.SyncthingFolderLabel)"
         "port=$($PackConfig.SyncthingPort)"
+        ''
+        '[network]'
+        'is_hub=true'
+        'introducer_device_id='
+        'auto_share=true'
     )
 
     $index = 1
@@ -248,6 +253,35 @@ function Export-LegacyConfigToIni {
 
     $lines | Set-Content -LiteralPath $IniPath -Encoding UTF8
     Write-Host 'Migrated config.ps1 -> config.ini (shared Windows + Mac)' -ForegroundColor Green
+    Write-Host ''
+}
+
+function Ensure-NetworkSectionInIni {
+    param([string]$IniPath)
+
+    if (-not (Test-Path $IniPath)) { return }
+
+    $ini = Read-IniFile -Path $IniPath
+    if ($ini.ContainsKey('network')) { return }
+
+    $hasPeerDevices = $false
+    foreach ($sectionName in $ini.Keys) {
+        if ($sectionName -match '^peer\.' -and $ini[$sectionName]['device_id'] -and $ini[$sectionName]['device_id'].Trim()) {
+            $hasPeerDevices = $true
+            break
+        }
+    }
+
+    $isHub = if ($hasPeerDevices) { 'true' } else { 'false' }
+    Add-Content -LiteralPath $IniPath -Encoding UTF8 -Value @(
+        '',
+        '; Added automatically - legacy config.ini lacked [network]'
+        '[network]',
+        "is_hub=$isHub",
+        'introducer_device_id=',
+        'auto_share=true'
+    )
+    Write-Host 'Added [network] section to config.ini (upgrade from older format).' -ForegroundColor Yellow
     Write-Host ''
 }
 
@@ -270,6 +304,8 @@ function Import-GkgConfig {
             throw 'Could not find config.ini or config.example.ini'
         }
     }
+
+    Ensure-NetworkSectionInIni -IniPath $iniPath
 
     $script:ConfigIniPath = $iniPath
 
@@ -316,12 +352,12 @@ function Import-GkgConfig {
     if ($local['device_id']) { $localDeviceId = $local['device_id'].Trim() }
 
     if ($isHub -and $introducerDeviceId) {
-        Write-Host "[network] is_hub=true ma lai co introducer_device_id — bo qua (hub khong can)." -ForegroundColor Yellow
+        Write-Host '[network] is_hub=true ma lai co introducer_device_id - bo qua (hub khong can).' -ForegroundColor Yellow
         $introducerDeviceId = ''
     }
 
     if ($introducerDeviceId -and $localDeviceId -and $introducerDeviceId -eq $localDeviceId) {
-        Write-Host "[network] introducer_device_id trung voi Device ID may nay — bo qua." -ForegroundColor Yellow
+        Write-Host '[network] introducer_device_id trung voi Device ID may nay - bo qua.' -ForegroundColor Yellow
         $introducerDeviceId = ''
     }
 

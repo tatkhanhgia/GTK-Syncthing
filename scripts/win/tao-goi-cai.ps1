@@ -21,7 +21,12 @@ New-Item -ItemType Directory -Force -Path $staging | Out-Null
 foreach ($name in $include) {
     $src = Join-Path $GkgRoot $name
     if (Test-Path $src) {
-        Copy-Item -Recurse -Force $src (Join-Path $staging $name)
+        $dest = Join-Path $staging $name
+        $destParent = Split-Path $dest -Parent
+        if ($destParent -and -not (Test-Path $destParent)) {
+            New-Item -ItemType Directory -Force -Path $destParent | Out-Null
+        }
+        Copy-Item -Recurse -Force $src $dest
     }
 }
 
