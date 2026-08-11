@@ -29,7 +29,7 @@ function Start-InstallConsole {
         '-NoProfile',
         '-ExecutionPolicy', 'Bypass',
         '-NoExit',
-        '-File', "`"$installScript`""
+        '-File', $installScript
     ) | Out-Null
 }
 
@@ -39,7 +39,7 @@ function Start-JoinConsole {
         '-NoProfile',
         '-ExecutionPolicy', 'Bypass',
         '-NoExit',
-        '-File', "`"$installScript`"",
+        '-File', $installScript,
         '-Mode', 'Join'
     ) | Out-Null
 }
@@ -50,7 +50,7 @@ function Start-RestartConsole {
         '-NoProfile',
         '-ExecutionPolicy', 'Bypass',
         '-NoExit',
-        '-File', "`"$restartScript`""
+        '-File', $restartScript
     ) | Out-Null
 }
 
@@ -60,7 +60,7 @@ function Start-SyncNowConsole {
         '-NoProfile',
         '-ExecutionPolicy', 'Bypass',
         '-NoExit',
-        '-File', "`"$syncNowScript`""
+        '-File', $syncNowScript
     ) | Out-Null
 }
 

@@ -70,6 +70,33 @@ function Show-DeviceIdDialog {
     }
 }
 
+function Invoke-JoinHubWizard {
+    param([string]$DefaultHubId = '')
+
+    Write-Host ''
+    Write-Host '--- Join Hub network ---' -ForegroundColor Cyan
+    Write-Host 'Paste the Hub machine Device ID (from the hub result page or Syncthing dashboard):'
+    if ($DefaultHubId) {
+        Write-Host "Current config: $DefaultHubId" -ForegroundColor DarkGray
+    }
+    while ($true) {
+        $hubId = Read-Host 'Hub Device ID'
+        $hubId = if ($hubId) { $hubId.Trim() } else { '' }
+        if (-not $hubId -and $DefaultHubId) {
+            $hubId = $DefaultHubId.Trim()
+        }
+        if (-not $hubId) {
+            Write-Warn 'Hub Device ID is required. Paste the ID and press Enter.'
+            continue
+        }
+        if (-not (Test-SyncthingDeviceId -DeviceId $hubId)) {
+            Write-Warn 'Invalid Hub Device ID (8 groups of 7 letters/digits, separated by -). Try again.'
+            continue
+        }
+        return $hubId
+    }
+}
+
 function Invoke-SetupWizard {
     param([string[]]$ExistingIds = @())
 
@@ -84,22 +111,7 @@ function Invoke-SetupWizard {
     $ids = [System.Collections.ArrayList]@($ExistingIds)
 
     if ($role -eq '3') {
-        Write-Host ''
-        Write-Host '--- Step 2: Hub Device ID ---' -ForegroundColor Cyan
-        Write-Host 'Paste the Hub machine Device ID here (required):'
-        while ($true) {
-            $hubId = Read-Host 'Hub Device ID'
-            $hubId = if ($hubId) { $hubId.Trim() } else { '' }
-            if (-not $hubId) {
-                Write-Warn 'Không nhập Hub Device ID. Thử lại hoặc nhập để tiếp tục.'
-                continue
-            }
-            if (-not (Test-SyncthingDeviceId -DeviceId $hubId)) {
-                Write-Warn 'Hub Device ID không hợp lệ (56 ký tự hex, nhóm 7 với dấu -). Hãy dán lại.'
-                continue
-            }
-            break
-        }
+        $hubId = Invoke-JoinHubWizard
         return @{
             PeerIds          = @($ids | Select-Object -Unique)
             JoinHubDeviceId  = $hubId

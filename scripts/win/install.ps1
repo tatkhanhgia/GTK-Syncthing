@@ -111,26 +111,21 @@ if ($Mode -eq 'Menu') {
 
 if ($Mode -eq 'Join') {
     $hubId = $PackConfig.IntroducerDeviceId
-
-    if (-not $hubId -or $SkipPrompt) {
-        if (-not $SkipPrompt) {
-            $wizard = Invoke-SetupWizard -ExistingIds @()
-            $hubId = $wizard.JoinHubDeviceId
-        } else {
-            $hubId = $PackConfig.IntroducerDeviceId
-        }
+    if (-not $SkipPrompt) {
+        $hubId = Invoke-JoinHubWizard -DefaultHubId $hubId
     }
 
     if (-not $hubId) {
-        throw 'Join Hub network: cần Hub Device ID. Vào menu chọn "Join network" lại.'
+        throw 'Join Hub network: Hub Device ID is required. Choose Join network again and paste the Hub Device ID.'
     }
 
     Write-Host ''
     Write-Info "Joining hub network (hub: $hubId)"
     Write-Info 'Installing... (this may take a few minutes)'
     $result = Install-SyncthingMode -Config $PackConfig -IntroducerDeviceId $hubId
+    Save-JoinNetworkConfig -IniPath $iniPath -IntroducerDeviceId $hubId
     Save-GkgConfigAfterInstall -IniPath $iniPath -DeviceId $result.DeviceId
-    Write-Ok "Updated config.ini with this machine's Device ID"
+    Write-Ok "Updated config.ini with this machine's Device ID and hub settings"
     Show-SyncthingResult -Result $result
     exit 0
 }
@@ -158,6 +153,7 @@ if ($Mode -eq 'Syncthing') {
     if ($joinHub) {
         Write-Info "Joining hub network (hub: $($RemoteDeviceIds[0]))"
         $result = Install-SyncthingMode -Config $PackConfig -IntroducerDeviceId $RemoteDeviceIds[0]
+        Save-JoinNetworkConfig -IniPath $iniPath -IntroducerDeviceId $RemoteDeviceIds[0]
         Save-GkgConfigAfterInstall -IniPath $iniPath -DeviceId $result.DeviceId -AddedPeerIds $wizardPeerIds
     } else {
         $result = Install-SyncthingMode -Config $PackConfig -RemoteDeviceIds $RemoteDeviceIds

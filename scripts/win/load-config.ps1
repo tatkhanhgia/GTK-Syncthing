@@ -197,6 +197,19 @@ function Save-GkgConfigAfterInstall {
     }
 }
 
+function Save-JoinNetworkConfig {
+    param(
+        [string]$IniPath,
+        [string]$IntroducerDeviceId
+    )
+
+    if (-not (Test-Path $IniPath)) { return }
+
+    Set-IniSectionValue -IniPath $IniPath -Section 'network' -Key 'is_hub' -Value 'false'
+    Set-IniSectionValue -IniPath $IniPath -Section 'network' -Key 'introducer_device_id' -Value $IntroducerDeviceId.Trim()
+    Set-IniSectionValue -IniPath $IniPath -Section 'network' -Key 'auto_share' -Value 'true'
+}
+
 function Clear-DuplicateLocalDeviceId {
     param([string]$IniPath)
 
